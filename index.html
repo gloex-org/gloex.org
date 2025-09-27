@@ -81,7 +81,7 @@
             background-color: #fffafa;
         }
         
-        /* Backend Demo Section (UPDATED TO CTA BUTTON) */
+        /* Backend Demo Section */
         .demo-section {
             background-color: #5555ff; /* Blue CTA background */
             padding: 20px;
@@ -176,7 +176,7 @@
             color: #666;
         }
 
-        /* Modal/Overlay Styles for Clicked Services (Simulated) */
+        /* Modal/Overlay Styles FIX */
         .modal-content {
             display: none; 
             padding: 15px;
@@ -185,17 +185,20 @@
             border: 1px solid #ffeeba;
             border-radius: 5px;
             color: #856404;
+            /* FIX 1: Make it display over other content */
+            position: absolute; 
+            z-index: 100; /* FIX 2: Ensure it is on top */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4); /* Stronger shadow to indicate overlay */
         }
 
         li:hover .modal-content {
             display: block; 
-            position: absolute;
-            z-index: 10;
             width: 90%;
             max-width: 500px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            /* Positioning relative to the list item */
+            top: 100%; /* Position below the list item */
+            left: 0;
+            transform: translateX(0);
         }
 
         /* Contact Section */
@@ -274,28 +277,28 @@
                         <strong>Website Maintenance & Management</strong>
                         <span>Ensuring your website is secure, fast, and up-to-date. Includes Free Website Management.</span>
                         <div class="modal-content">
-                            **Details:** We handle backups, security patching, content updates, and performance optimization so you can focus on your business.
+                            Details: We handle backups, security patching, content updates, and performance optimization so you can focus on your business.
                         </div>
                     </li>
                     <li title="Click to learn about custom web application and API creation.">
                         <strong>Custom Web/Mobile Application Development</strong>
                         <span>Building unique, large-scale software solutions for complex business needs.</span>
                         <div class="modal-content">
-                            **Details:** From bespoke internal tools to public-facing applications, we use modern frameworks (like React, Node.js) to deliver high performance.
+                            Details: From bespoke internal tools to public-facing applications, we use modern frameworks (like React, Node.js) to deliver high performance.
                         </div>
                     </li>
                     <li title="Click to learn about integrating AI features.">
                         <strong>Advanced API & AI Integration</strong>
                         <span>Connecting your systems and embedding intelligent features like chatbots and data analysis.</span>
                         <div class="modal-content">
-                            **Details:** We integrate third-party APIs (e.g., payment gateways) and implement Machine Learning models to automate tasks and provide deep insights.
+                            Details: We integrate third-party APIs (e.g., payment gateways) and implement Machine Learning models to automate tasks and provide deep insights.
                         </div>
                     </li>
                     <li title="Click to learn about e-commerce platforms.">
                         <strong>Ecommerce Stores & Online Payments</strong>
                         <span>Creating powerful online shops and integrating secure payment gateways for global transactions.</span>
                         <div class="modal-content">
-                            **Details:** Full-stack e-commerce solutions, product management, secure payment processing, and inventory synchronization.
+                            Details: Full-stack e-commerce solutions, product management, secure payment processing, and inventory synchronization.
                         </div>
                     </li>
                 </ul>
@@ -316,28 +319,28 @@
                         <strong>Billing, POS & Invoicing Systems</strong>
                         <span>Streamlining sales, inventory tracking, and client billing for retail and service industries.</span>
                         <div class="modal-content">
-                            **Details:** Customized Point-of-Sale (POS) systems, automated invoicing, and sales reporting tools for financial clarity.
+                            Details: Customized Point-of-Sale (POS) systems, automated invoicing, and sales reporting tools for financial clarity.
                         </div>
                     </li>
                     <li>
                         <strong>HR, Payroll & CRM Tools</strong>
                         <span>Managing your workforce and client relationships efficiently in one centralized system.</span>
                         <div class="modal-content">
-                            **Details:** Tools for staff management, automated salary calculation, and Customer Relationship Management (CRM) to track leads and support history.
+                            Details: Tools for staff management, automated salary calculation, and Customer Relationship Management (CRM) to track leads and support history.
                         </div>
                     </li>
                     <li>
                         <strong>Stock & Inventory Management Systems</strong>
                         <span>Keeping track of assets, stock levels, and supply chains in real-time.</span>
                         <div class="modal-content">
-                            **Details:** Automated low-stock alerts, multi-warehouse support, and detailed reporting to minimize loss and optimize purchasing.
+                            Details: Automated low-stock alerts, multi-warehouse support, and detailed reporting to minimize loss and optimize purchasing.
                         </div>
                     </li>
                     <li>
                         <strong>Ticketing Systems & Customer Support</strong>
                         <span>Professional systems for managing support queries, help desks, and technical requests.</span>
                         <div class="modal-content">
-                            **Details:** Efficient help desk software, ticket prioritization, and integrated knowledge bases for faster customer resolution.
+                            Details: Efficient help desk software, ticket prioritization, and integrated knowledge bases for faster customer resolution.
                         </div>
                     </li>
                 </ul>
@@ -350,21 +353,21 @@
                         <strong>Proactive Cyber Security Support</strong>
                         <span>Protecting your digital assets from threats with monitoring, patching, and defense strategies.</span>
                         <div class="modal-content">
-                            **Details:** Security audits, firewall configuration, regular vulnerability scanning, and quick incident response to keep your data safe.
+                            Details: Security audits, firewall configuration, regular vulnerability scanning, and quick incident response to keep your data safe.
                         </div>
                     </li>
                     <li title="Click to learn about hosting and infrastructure.">
                         <strong>Cloud Infrastructure & Deployment (DevOps)</strong>
                         <span>Setting up secure, scalable, and high-availability cloud hosting environments (e.g., AWS, Azure).</span>
                         <div class="modal-content">
-                            **Details:** Professional deployment, automated scaling, continuous integration/continuous deployment (CI/CD) pipelines, and server management.
+                            Details: Professional deployment, automated scaling, continuous integration/continuous deployment (CI/CD) pipelines, and server management.
                         </div>
                     </li>
                     <li title="Click to learn about data reporting.">
                         <strong>Data Analytics Board & Business Intelligence</strong>
                         <span>Turning raw data into actionable insights with custom dashboards and reporting tools.</span>
                         <div class="modal-content">
-                            **Details:** We connect your various systems to create a unified dashboard for visualizing key performance indicators (KPIs) and business health.
+                            Details: We connect your various systems to create a unified dashboard for visualizing key performance indicators (KPIs) and business health.
                         </div>
                     </li>
                 </ul>
@@ -397,11 +400,11 @@
         <div class="contact-info">
             <h3>📞 Ready to Start Your Project?</h3>
             <p>Contact the ELIJUL GROUPS LTD team today.</p>
-            <p><strong>Website:</strong> <a href="https://www.gloex.org">WWW.GLOEX.ORG</a></p>
-            <p><strong>Email:</strong> <a href="mailto:info@gloex.org">info@gloex.org</a></p>
-            <p><strong>Phone/WhatsApp:</strong> +250788660513</p>
+            <p>Website: <a href="https://www.gloex.org">WWW.GLOEX.ORG</a></p>
+            <p>Email: <a href="mailto:info@gloex.org">info@gloex.org</a></p>
+            <p>Phone/WhatsApp: +250788660513</p>
             <p class="footer-address">
-                **Address:** Kigali, Rwanda
+                Address: Kigali, Rwanda
             </p>
             <p class="footer-logo">TWUBAKA-WEB</p>
         </div>
