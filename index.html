@@ -81,48 +81,35 @@
             background-color: #fffafa;
         }
         
-        /* Backend Demo Section (NEW) */
+        /* Backend Demo Section (UPDATED TO CTA BUTTON) */
         .demo-section {
-            background-color: #f4f4ff; /* Light blue/purple background */
-            padding: 20px;
-            border-bottom: 2px solid #5555ff;
-        }
-
-        .demo-section details {
-            margin: 0 auto;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
-
-        .demo-section summary {
             background-color: #5555ff; /* Blue CTA background */
-            color: white;
-            padding: 15px 20px;
-            font-size: 1.4em;
-            font-weight: bold;
-            cursor: pointer;
-            outline: none;
-            list-style: none; /* Hide default triangle/arrow */
+            padding: 20px;
             text-align: center;
-            border-radius: 8px;
-            transition: background-color 0.3s;
-        }
-        
-        .demo-section summary:hover {
-            background-color: #3333cc;
-        }
-        
-        .demo-section summary::marker, .demo-section summary::-webkit-details-marker {
-            display: none;
         }
 
-        .demo-iframe {
-            width: 100%;
-            /* Makes the iframe full viewport height minus header/footer */
-            height: 90vh; 
-            border: none;
-            margin-top: 10px;
-            background-color: white;
+        .demo-button {
+            background-color: #ffcc00; /* Yellow button */
+            color: #000;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px; /* Pill shape */
+            transition: background-color 0.3s, transform 0.1s;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .demo-button:hover {
+            background-color: #ffea70;
+            transform: translateY(-2px);
+        }
+
+        .demo-section p {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
         }
 
 
@@ -168,7 +155,7 @@
             transition: transform 0.2s, background-color 0.2s;
             cursor: pointer;
             border: 1px solid #ddd;
-            position: relative; /* Needed for hover modal */
+            position: relative; 
         }
 
         .service-list li:hover {
@@ -187,6 +174,28 @@
         .service-list span {
             font-size: 0.9em;
             color: #666;
+        }
+
+        /* Modal/Overlay Styles for Clicked Services (Simulated) */
+        .modal-content {
+            display: none; 
+            padding: 15px;
+            margin-top: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+        }
+
+        li:hover .modal-content {
+            display: block; 
+            position: absolute;
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         /* Contact Section */
@@ -231,29 +240,6 @@
             font-size: 0.9em;
             color: #bbb;
         }
-
-        /* Modal/Overlay Styles for Clicked Services (Simulated) */
-        .modal-content {
-            display: none; 
-            padding: 15px;
-            margin-top: 10px;
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 5px;
-            color: #856404;
-        }
-
-        li:hover .modal-content {
-            /* Simulates showing details on hover for static HTML demo */
-            display: block; 
-            position: absolute;
-            z-index: 10;
-            width: 90%;
-            max-width: 500px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
     </style>
 </head>
 <body>
@@ -273,11 +259,10 @@
         </div>
 
         <div class="demo-section">
-            <details>
-                <summary>Click to View Our Live Backend Demo Platform</summary>
-                <p style="text-align: center; margin: 10px 0; font-style: italic; color: #555;">(The live site from your backend will load below. Please note that external site loading success may depend on the external site's security settings, but the implementation is correct.)</p>
-                <iframe class="demo-iframe" src="https://bizimanasoftware.pythonanywhere.com" title="Live Software Backend Demo"></iframe>
-            </details>
+            <p>Want to see our live work in action?</p>
+            <a href="https://bizimanasoftware.pythonanywhere.com" target="_blank" class="demo-button">
+                🔥 LAUNCH LIVE SOFTWARE DEMO
+            </a>
         </div>
         <div class="services-section">
             <h3>💡 WHAT WE OFFER (STARTING FROM 20,000RWF)</h3>
