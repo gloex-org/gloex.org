@@ -185,18 +185,16 @@
             border: 1px solid #ffeeba;
             border-radius: 5px;
             color: #856404;
-            /* FIX 1: Make it display over other content */
             position: absolute; 
-            z-index: 100; /* FIX 2: Ensure it is on top */
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4); /* Stronger shadow to indicate overlay */
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         }
 
         li:hover .modal-content {
             display: block; 
             width: 90%;
             max-width: 500px;
-            /* Positioning relative to the list item */
-            top: 100%; /* Position below the list item */
+            top: 100%; 
             left: 0;
             transform: translateX(0);
         }
@@ -242,6 +240,18 @@
             margin-top: 15px;
             font-size: 0.9em;
             color: #bbb;
+        }
+
+        .admin-link {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #999;
+            text-decoration: none;
+        }
+        .admin-link:hover {
+            color: #fff;
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -406,7 +416,8 @@
             <p class="footer-address">
                 Address: Kigali, Rwanda
             </p>
-            <p class="footer-logo">TWUBAKA-WEB</p>
+            <p class="footer-logo">TWUBAKA</p>
+            <a href="admin/index.html" class="admin-link">Admin Login</a>
         </div>
     </div>
 
