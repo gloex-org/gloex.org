@@ -33,7 +33,7 @@
         }
 
         header img {
-            max-width: 200px; /* Increased size for prominence */
+            max-width: 200px;
             height: auto;
             margin-bottom: 10px;
         }
@@ -50,7 +50,7 @@
             color: #ffcc00;
         }
 
-        /* Welcome Section - New */
+        /* Welcome Section */
         .welcome-section {
             text-align: center;
             padding: 40px 20px;
@@ -80,6 +80,51 @@
             display: inline-block;
             background-color: #fffafa;
         }
+        
+        /* Backend Demo Section (NEW) */
+        .demo-section {
+            background-color: #f4f4ff; /* Light blue/purple background */
+            padding: 20px;
+            border-bottom: 2px solid #5555ff;
+        }
+
+        .demo-section details {
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .demo-section summary {
+            background-color: #5555ff; /* Blue CTA background */
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.4em;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            list-style: none; /* Hide default triangle/arrow */
+            text-align: center;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        
+        .demo-section summary:hover {
+            background-color: #3333cc;
+        }
+        
+        .demo-section summary::marker, .demo-section summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .demo-iframe {
+            width: 100%;
+            /* Makes the iframe full viewport height minus header/footer */
+            height: 90vh; 
+            border: none;
+            margin-top: 10px;
+            background-color: white;
+        }
+
 
         /* Services Grid */
         .services-section {
@@ -123,6 +168,7 @@
             transition: transform 0.2s, background-color 0.2s;
             cursor: pointer;
             border: 1px solid #ddd;
+            position: relative; /* Needed for hover modal */
         }
 
         .service-list li:hover {
@@ -187,11 +233,8 @@
         }
 
         /* Modal/Overlay Styles for Clicked Services (Simulated) */
-        /* Since this is static HTML, we use basic styling for an attractive look */
-        /* To make this function, you would add JavaScript (not possible in this output) */
-        
         .modal-content {
-            display: none; /* Hidden by default */
+            display: none; 
             padding: 15px;
             margin-top: 10px;
             background-color: #fff3cd;
@@ -201,14 +244,16 @@
         }
 
         li:hover .modal-content {
-            display: block; /* Simulated reveal on hover for static display */
+            /* Simulates showing details on hover for static HTML demo */
+            display: block; 
             position: absolute;
             z-index: 10;
             width: 90%;
             max-width: 500px;
-            /* In a real scenario, this would be handled by JS */
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-
     </style>
 </head>
 <body>
@@ -227,6 +272,13 @@
             <p class="price-callout">STARTING FROM 20,000 FRW.</p>
         </div>
 
+        <div class="demo-section">
+            <details>
+                <summary>Click to View Our Live Backend Demo Platform</summary>
+                <p style="text-align: center; margin: 10px 0; font-style: italic; color: #555;">(The live site from your backend will load below. Please note that external site loading success may depend on the external site's security settings, but the implementation is correct.)</p>
+                <iframe class="demo-iframe" src="https://bizimanasoftware.pythonanywhere.com" title="Live Software Backend Demo"></iframe>
+            </details>
+        </div>
         <div class="services-section">
             <h3>💡 WHAT WE OFFER (STARTING FROM 20,000RWF)</h3>
 
