@@ -50,6 +50,39 @@
             color: #ffcc00;
         }
 
+        /* Animated Tank Section */
+        .animated-tank-section {
+            background-color: #e9eef2; /* Match body background for a seamless look */
+            text-align: center;
+            padding: 20px 0;
+            overflow: hidden; /* Hide overflow from animation */
+        }
+
+        .tank-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px; /* Adjust height as needed for the image */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tank-image {
+            max-width: 100%;
+            height: auto;
+            animation: bounce 2s infinite alternate; /* Simple bounce animation */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tank-image:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-15px); }
+        }
+
         /* Welcome Section */
         .welcome-section {
             text-align: center;
@@ -264,6 +297,11 @@
             <p>ELIJUL GROUPS LTD</p>
         </header>
 
+        <div class="animated-tank-section">
+            <div class="tank-wrapper">
+                <img src="tank_picture.png" alt="GLOEX.ORG Services" class="tank-image">
+            </div>
+        </div>
         <div class="welcome-section">
             <p style="font-size: 1.1em; color: #000;">DISCOVER</p>
             <h2>🚀 GET YOUR WEBSITE OR SOFTWARE TODAY!</h2>
