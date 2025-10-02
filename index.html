@@ -3,6 +3,449 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GloEx Project Showcase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .card { backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.9); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
+        .btn-primary { transition: all 0.2s; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4); }
+        .project-card { transition: transform 0.2s; }
+        .project-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navbar -->
+    <header class="bg-white sticky top-0 z-10 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-indigo-600">GloEx Projects</h1>
+            <div id="auth-status" class="flex items-center space-x-4">
+                <span id="username-display" class="hidden font-medium text-gray-700"></span>
+                <button id="logout-button" class="hidden px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Panel: Auth & Post Forms -->
+        <div class="lg:col-span-1 space-y-8">
+            
+            <!-- Auth Section -->
+            <section id="auth-section" class="card p-6 rounded-xl space-y-6">
+                <h2 class="text-xl font-semibold text-gray-800 border-b pb-2">Account Access</h2>
+                
+                <!-- Registration Form -->
+                <div id="register-container">
+                    <h3 class="text-lg font-medium mb-3">Register</h3>
+                    <form id="register-form" class="space-y-4">
+                        <input type="text" id="reg-username" placeholder="Username" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="password" id="reg-password" placeholder="Password" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <button type="submit" class="btn-primary w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md">
+                            Register
+                        </button>
+                    </form>
+                    <button id="show-login" class="mt-3 w-full text-center text-sm text-indigo-600 hover:text-indigo-800">
+                        Already have an account? Login
+                    </button>
+                </div>
+
+                <!-- Login Form (Initially Hidden) -->
+                <div id="login-container" class="hidden">
+                    <h3 class="text-lg font-medium mb-3">Login</h3>
+                    <form id="login-form" class="space-y-4">
+                        <input type="text" id="log-username" placeholder="Username" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="password" id="log-password" placeholder="Password" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <button type="submit" class="btn-primary w-full px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md">
+                            Login
+                        </button>
+                    </form>
+                    <button id="show-register" class="mt-3 w-full text-center text-sm text-indigo-600 hover:text-indigo-800">
+                        Need an account? Register
+                    </button>
+                </div>
+            </section>
+
+            <!-- Project Posting Form (Initially Hidden) -->
+            <section id="post-section" class="card p-6 rounded-xl space-y-6 hidden">
+                <h2 class="text-xl font-semibold text-gray-800 border-b pb-2">Post Your Project</h2>
+                <form id="post-form" class="space-y-4">
+                    <input type="text" id="post-title" placeholder="Project Title" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    
+                    <textarea id="post-description" placeholder="Short Description" required rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+
+                    <input type="url" id="post-url" placeholder="Project/Demo Link (Full URL)" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+
+                    <select id="post-type"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="repo">Code Repository (GitHub)</option>
+                        <option value="demo">Live Demo Site</option>
+                        <option value="image">Public Image Link</option>
+                        <option value="custom">Custom Link</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md">
+                        Submit Project
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- Right Panel: Project List -->
+        <div class="lg:col-span-2">
+            <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-6">Global Project Feed</h2>
+            <div id="project-list" class="space-y-4">
+                <!-- Projects will be dynamically inserted here -->
+            </div>
+            <div id="loading-indicator" class="text-center py-8 hidden text-gray-500">
+                <svg class="animate-spin h-5 w-5 mr-3 inline-block text-indigo-600" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading projects...
+            </div>
+            <div id="error-message" class="text-center py-8 hidden text-red-500 font-medium"></div>
+        </div>
+    </main>
+
+    <!-- Global Message Box -->
+    <div id="message-box" class="fixed bottom-4 right-4 z-50 transition-all duration-300 opacity-0 transform translate-y-20">
+        <div class="bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-2xl">
+            <p id="message-text"></p>
+        </div>
+    </div>
+
+
+    <script>
+        // Set the base URL for your Django API hosted on PythonAnywhere
+        const API_BASE_URL = "https://bizimanasoftware.pythonanywhere.com/api/apied";
+        
+        // Use document.cookie to access the CSRF token
+        function getCSRFToken() {
+            const name = "csrftoken";
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        return decodeURIComponent(cookie.substring(name.length + 1));
+                    }
+                }
+            }
+            return null;
+        }
+
+        // --- UI State Management ---
+        let currentUsername = null;
+        let currentUserId = null;
+
+        const ui = {
+            authSection: document.getElementById('auth-section'),
+            postSection: document.getElementById('post-section'),
+            registerContainer: document.getElementById('register-container'),
+            loginContainer: document.getElementById('login-container'),
+            usernameDisplay: document.getElementById('username-display'),
+            logoutButton: document.getElementById('logout-button'),
+            projectList: document.getElementById('project-list'),
+            loadingIndicator: document.getElementById('loading-indicator'),
+            errorMessage: document.getElementById('error-message'),
+            messageBox: document.getElementById('message-box'),
+            messageText: document.getElementById('message-text'),
+            forms: {
+                register: document.getElementById('register-form'),
+                login: document.getElementById('login-form'),
+                post: document.getElementById('post-form'),
+            }
+        };
+
+        function showMessage(message, type = 'success', duration = 3000) {
+            ui.messageText.textContent = message;
+            ui.messageBox.className = `fixed bottom-4 right-4 z-50 transition-all duration-300 opacity-100 transform translate-y-0 ${type === 'error' ? 'bg-red-600' : 'bg-indigo-600'} text-white px-6 py-3 rounded-xl shadow-2xl`;
+            
+            setTimeout(() => {
+                ui.messageBox.className = 'fixed bottom-4 right-4 z-50 transition-all duration-300 opacity-0 transform translate-y-20';
+            }, duration);
+        }
+
+        function updateUI(isAuthenticated) {
+            if (isAuthenticated) {
+                ui.authSection.classList.add('hidden');
+                ui.postSection.classList.remove('hidden');
+                ui.usernameDisplay.textContent = `Welcome, ${currentUsername}`;
+                ui.usernameDisplay.classList.remove('hidden');
+                ui.logoutButton.classList.remove('hidden');
+            } else {
+                ui.authSection.classList.remove('hidden');
+                ui.postSection.classList.add('hidden');
+                ui.usernameDisplay.classList.add('hidden');
+                ui.logoutButton.classList.add('hidden');
+                // Ensure only one auth form is visible on load
+                ui.registerContainer.classList.remove('hidden');
+                ui.loginContainer.classList.add('hidden');
+            }
+        }
+
+        // --- API Calls ---
+
+        /**
+         * Fetches all public projects and updates the display.
+         */
+        async function fetchProjects() {
+            ui.projectList.innerHTML = '';
+            ui.loadingIndicator.classList.remove('hidden');
+            ui.errorMessage.classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/projects/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const projects = await response.json();
+                renderProjects(projects);
+
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+                ui.errorMessage.textContent = 'Failed to load projects. Check API URL and server status.';
+                ui.errorMessage.classList.remove('hidden');
+            } finally {
+                ui.loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Checks the current session status.
+         */
+        async function checkAuthStatus() {
+            try {
+                // IMPORTANT: include credentials for session cookie to be sent
+                const response = await fetch(`${API_BASE_URL}/user/`, { 
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include' 
+                });
+                
+                const data = await response.json();
+                if (data.is_authenticated) {
+                    currentUsername = data.username;
+                    currentUserId = data.user_id;
+                    updateUI(true);
+                } else {
+                    currentUsername = null;
+                    currentUserId = null;
+                    updateUI(false);
+                }
+            } catch (error) {
+                console.error("Error checking auth status:", error);
+                currentUsername = null;
+                currentUserId = null;
+                updateUI(false);
+            }
+        }
+
+        // --- Rendering ---
+        
+        function getIconForType(type) {
+            switch(type) {
+                case 'Code Repository (e.g., GitHub)': return '💻';
+                case 'Live Demo Site (e.g., Netlify, Vercel)': return '🚀';
+                case 'Public Image Link (e.g., Imgur)': return '🖼️';
+                default: return '🔗';
+            }
+        }
+
+        function createProjectCard(project) {
+            const card = document.createElement('div');
+            card.className = 'project-card card p-5 rounded-xl space-y-3 border border-gray-100 hover:border-indigo-200';
+            
+            card.innerHTML = `
+                <div class="flex items-start justify-between">
+                    <h3 class="text-xl font-bold text-gray-900">${project.title}</h3>
+                    <span class="text-2xl ml-4">${getIconForType(project.type)}</span>
+                </div>
+                <p class="text-sm text-indigo-600 font-medium">
+                    Posted by: ${project.username}
+                    <span class="text-xs text-gray-500 ml-2">(${project.created_at})</span>
+                </p>
+                <p class="text-gray-600">${project.description}</p>
+                <a href="${project.url}" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center text-indigo-500 font-semibold hover:text-indigo-700 transition-colors">
+                    View Project
+                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+            `;
+            return card;
+        }
+
+        function renderProjects(projects) {
+            ui.projectList.innerHTML = '';
+            if (projects.length === 0) {
+                ui.projectList.innerHTML = '<p class="text-center text-gray-500 py-4">No projects have been posted yet. Be the first!</p>';
+                return;
+            }
+            projects.forEach(project => {
+                ui.projectList.appendChild(createProjectCard(project));
+            });
+        }
+
+        // --- Event Handlers ---
+
+        ui.forms.register.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = e.target.elements['reg-username'].value;
+            const password = e.target.elements['reg-password'].value;
+            
+            const response = await fetch(`${API_BASE_URL}/register/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                showMessage(data.message);
+                // Switch to login view after successful registration
+                document.getElementById('show-login').click(); 
+            } else {
+                showMessage(data.error || 'Registration failed.', 'error');
+            }
+        });
+
+        ui.forms.login.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = e.target.elements['log-username'].value;
+            const password = e.target.elements['log-password'].value;
+
+            // Make sure credentials are included to get the session cookie
+            const response = await fetch(`${API_BASE_URL}/login/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', 
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                showMessage(data.message);
+                currentUsername = data.username;
+                currentUserId = data.user_id;
+                updateUI(true);
+                // Clear password field
+                e.target.elements['log-password'].value = ''; 
+                fetchProjects(); // Refresh projects in case any are user-specific (not implemented but good practice)
+            } else {
+                showMessage(data.error || 'Login failed.', 'error');
+            }
+        });
+
+        ui.logoutButton.addEventListener('click', async () => {
+             // Make sure credentials are included to clear the session cookie
+            const response = await fetch(`${API_BASE_URL}/logout/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', 
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                showMessage(data.message);
+                currentUsername = null;
+                currentUserId = null;
+                updateUI(false);
+                fetchProjects();
+            } else {
+                showMessage(data.error || 'Logout failed.', 'error');
+            }
+        });
+
+        ui.forms.post.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const postData = {
+                title: e.target.elements['post-title'].value,
+                description: e.target.elements['post-description'].value,
+                project_url: e.target.elements['post-url'].value,
+                project_type: e.target.elements['post-type'].value,
+            };
+
+            const csrfToken = getCSRFToken();
+            if (!csrfToken) {
+                showMessage('CSRF token missing. Try logging out and logging back in.', 'error');
+                return;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/projects/`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken // Send CSRF token for protected POST
+                },
+                credentials: 'include',
+                body: JSON.stringify(postData)
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                showMessage('Project successfully posted!');
+                e.target.reset(); // Clear the form
+                fetchProjects(); // Refresh the list
+            } else {
+                showMessage(data.error || 'Failed to post project.', 'error');
+            }
+        });
+
+        // Auth Form Toggles
+        document.getElementById('show-login').addEventListener('click', () => {
+            ui.registerContainer.classList.add('hidden');
+            ui.loginContainer.classList.remove('hidden');
+        });
+
+        document.getElementById('show-register').addEventListener('click', () => {
+            ui.loginContainer.classList.add('hidden');
+            ui.registerContainer.classList.remove('hidden');
+        });
+
+
+        // --- Initialization ---
+        window.onload = () => {
+            // Check auth status first, then fetch projects
+            checkAuthStatus().then(fetchProjects);
+        };
+
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GLOEX.ORG | ELIJUL GROUPS LTD - Digital Solutions in Kigali, Rwanda</title>
     <style>
         /* Base Styles */
