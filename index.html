@@ -9,17 +9,37 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb;
+            background-color: #f7f9fb; /* Light gray background */
+        }
+        /* Simple line clamp utility */
+        .line-clamp-3 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <header class="bg-white shadow-md p-4 sticky top-0 z-10">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex justify-between items-center gap-4">
             <h1 class="text-2xl font-bold text-gray-800">
                 <a href="#" onclick="currentState.view='dashboard'; renderApp(); return false;" id="appTitle">gloEx Hub</a>
             </h1>
+            
+            <div class="flex-grow max-w-lg">
+                <form id="search-form" onsubmit="handleSearch(event)">
+                    <div class="relative">
+                        <input type="search" name="query" placeholder="Search projects by title, keyword, or user..."
+                               class="w-full p-2 pl-4 pr-10 border border-gray-300 rounded-full bg-gray-50 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition">
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
             <nav id="nav-actions">
                 </nav>
         </div>
@@ -27,10 +47,9 @@
 
     <main class="container mx-auto p-4 flex-grow" id="app-container">
         </main>
-
-    <div id="message-box" class="fixed top-0 left-1/2 transform -translate-x-1/2 p-3 rounded-b-lg shadow-xl text-white font-semibold z-20 transition-all duration-300 opacity-0 pointer-events-none"></div>
-
-    <div id="project-detail-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden items-center justify-center p-4">
+    
+    <div id="message-box" class="fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg shadow-xl text-white font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none"></div>
+    <div id="project-detail-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
         <div id="modal-content" class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             </div>
     </div>
@@ -40,13 +59,13 @@
         // --- Configuration ---
         const API_BASE_URL = 'https://gloex.pythonanywhere.com/api';
         
+        // --- State Management ---
         let currentState = {
             user: null,
             projects: [],
-            loading: true,
-            message: null,
-            view: 'dashboard', // Default to dashboard on load
-            currentProjectDetail: null, // For modal view
+            view: 'dashboard', // Default to dashboard for everyone
+            currentProjectDetail: null,
+            searchQuery: '',
         };
 
         const PROJECT_TYPE_OPTIONS = [
@@ -58,107 +77,66 @@
             { value: 'other', label: 'Other' },
         ];
 
-
         // --- Utility Functions ---
-
-        /** Retrieves the CSRF token from cookies (essential for cross-origin POST) */
         function getCsrfToken() {
-            const name = 'csrftoken';
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        return decodeURIComponent(cookie.substring(name.length + 1));
-                    }
-                }
-            }
-            return null;
+            const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+            return token ? decodeURIComponent(token.split('=')[1]) : null;
         }
 
-        /** Shows a temporary success or error message */
         function showMessage(text, type = 'success') {
             const box = document.getElementById('message-box');
             box.textContent = text;
             box.style.opacity = 1;
-            box.classList.remove('bg-green-500', 'bg-red-500');
-            box.classList.add(type === 'success' ? 'bg-green-500' : 'bg-red-500');
-
-            setTimeout(() => {
-                box.style.opacity = 0;
-            }, 3000);
+            box.classList.remove('bg-green-600', 'bg-red-600');
+            box.classList.add(type === 'success' ? 'bg-green-600' : 'bg-red-600'); // Using a darker green
+            setTimeout(() => { box.style.opacity = 0; }, 3500);
         }
 
-        /** Generic fetch wrapper for API interaction (handles JSON) */
         async function fetchData(url, options = {}) {
-            const defaultOptions = {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-            };
-            
-            // Add CSRF token for non-GET requests if not FormData
+            const defaultHeaders = { 'Content-Type': 'application/json' };
+            const config = { credentials: 'include', ...options, headers: { ...defaultHeaders, ...options.headers } };
+
             if (options.method && options.method !== 'GET' && !(options.body instanceof FormData)) {
                 const csrfToken = getCsrfToken();
-                if (csrfToken) {
-                    options.headers['X-CSRFToken'] = csrfToken;
-                }
+                if (csrfToken) config.headers['X-CSRFToken'] = csrfToken;
             }
-
-            // Remove Content-Type header if body is FormData (browser sets it correctly)
             if (options.body instanceof FormData) {
-                delete defaultOptions.headers['Content-Type'];
+                delete config.headers['Content-Type']; // Browser sets this with boundary
             }
 
-            const response = await fetch(url, { ...defaultOptions, ...options });
-            
-            if (response.status === 401 || response.status === 403) {
-                if (currentState.user && currentState.user.is_authenticated) {
-                    currentState.user = null;
-                    renderApp();
-                    showMessage('Session expired or unauthorized. Please log in again.', 'error');
-                }
-            }
-
+            const response = await fetch(url, config);
             const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || `HTTP error! Status: ${response.status}`);
+
+            if (!response.ok) {
+                const errorData = contentType?.includes("application/json") ? await response.json() : { error: `HTTP error! Status: ${response.status}` };
+                if (response.status === 401 || response.status === 403) {
+                    currentState.user = null;
+                    renderApp(); // Force re-render to show login state
                 }
-                return data;
-            } else {
-                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response;
+                throw new Error(errorData.error || `Request failed.`);
             }
+
+            return contentType?.includes("application/json") ? response.json() : response;
         }
 
 
         // --- API Calls ---
-
         async function checkAuth() {
             try {
                 const user = await fetchData(`${API_BASE_URL}/user/`);
                 currentState.user = user.is_authenticated ? user : null;
             } catch (error) {
-                console.error('Auth check failed:', error);
                 currentState.user = null;
             }
         }
 
         async function fetchProjects(username = null) {
             let url = `${API_BASE_URL}/projects/`;
-            if (username) {
-                url = `${API_BASE_URL}/portfolio/${username}/`;
-            }
-
+            if (username) url = `${API_BASE_URL}/portfolio/${username}/`;
             try {
                 currentState.projects = await fetchData(url);
             } catch (error) {
-                console.error('Failed to load projects:', error);
+                showMessage(`Failed to load projects: ${error.message}`, 'error');
                 currentState.projects = [];
             }
         }
@@ -172,105 +150,92 @@
                 showMessage(`Failed to load project details: ${error.message}`, 'error');
             }
         }
+        
+        // NEW: Handle search
+        async function handleSearch(event) {
+            event.preventDefault();
+            const query = event.target.elements.query.value.trim();
+            currentState.searchQuery = query;
+            currentState.view = 'dashboard';
+            
+            if (!query) {
+                await fetchProjects(); // Fetch all public projects if search is cleared
+            } else {
+                try {
+                    currentState.projects = await fetchData(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}`);
+                } catch (error) {
+                    showMessage(`Search failed: ${error.message}`, 'error');
+                    currentState.projects = [];
+                }
+            }
+            renderApp();
+        }
 
         async function handleAuthForm(event, endpoint) {
             event.preventDefault();
-            const form = event.target;
-            const data = Object.fromEntries(new FormData(form).entries());
-            
-            if (!data.username || !data.password) {
-                showMessage('Username and password are required.', 'error');
-                return;
-            }
-            
+            const data = Object.fromEntries(new FormData(event.target).entries());
             try {
-                const user = await fetchData(`${API_BASE_URL}/${endpoint}/`, {
-                    method: 'POST',
-                    body: JSON.stringify(data),
-                });
-                
+                const user = await fetchData(`${API_BASE_URL}/${endpoint}/`, { method: 'POST', body: JSON.stringify(data) });
                 currentState.user = user;
                 showMessage(`Welcome, ${user.username}!`);
                 currentState.view = 'dashboard';
                 renderApp();
-
             } catch (error) {
                 showMessage(`Authentication failed: ${error.message}`, 'error');
             }
         }
 
         async function handleLogout() {
-            try {
-                await fetchData(`${API_BASE_URL}/logout/`, {
-                    method: 'POST',
-                });
-                currentState.user = null;
-                showMessage('Successfully logged out.', 'success');
-                currentState.view = 'auth';
-                renderApp();
-            } catch (error) {
-                showMessage(`Logout failed: ${error.message}`, 'error');
-            }
+            await fetchData(`${API_BASE_URL}/logout/`, { method: 'POST' });
+            currentState.user = null;
+            showMessage('Successfully logged out.');
+            currentState.view = 'dashboard'; // Go back to public dashboard
+            renderApp();
         }
 
         async function handlePostProject(event) {
             event.preventDefault();
-            const form = event.target;
-            
-            // Use FormData for file upload
-            const formData = new FormData(form);
-
-            // Simple URL validation
-            if (!formData.get('title') || !formData.get('project_url')) {
-                showMessage('Title and Demo/Primary Link are required.', 'error');
-                return;
-            }
-
             try {
-                const newProject = await fetchData(`${API_BASE_URL}/projects/`, {
-                    method: 'POST',
-                    // Note: No Content-Type header when using FormData
-                    body: formData,
-                });
-                
-                // Add the new project to the list and re-render
+                const newProject = await fetchData(`${API_BASE_URL}/projects/`, { method: 'POST', body: new FormData(event.target) });
                 currentState.projects.unshift(newProject);
-                form.reset();
-                showMessage('Project successfully posted!', 'success');
+                showMessage('Project successfully posted!');
+                event.target.reset();
                 renderApp();
-
             } catch (error) {
                 showMessage(`Posting failed: ${error.message}`, 'error');
             }
         }
-
+        
+        // NEW: Handle project deletion
+        async function handleDeleteProject(projectId) {
+            if (!confirm('Are you sure you want to permanently delete this project?')) return;
+            try {
+                await fetchData(`${API_BASE_URL}/projects/${projectId}/`, { method: 'DELETE' });
+                currentState.projects = currentState.projects.filter(p => p.id !== projectId);
+                showMessage('Project deleted successfully.', 'success');
+                closeProjectDetailModal();
+                renderApp();
+            } catch (error) {
+                showMessage(`Deletion failed: ${error.message}`, 'error');
+            }
+        }
+        
         async function handleLikeToggle(projectId) {
             if (!currentState.user) {
-                showMessage('You must be logged in to like a project.', 'error');
+                showMessage('You must be logged in to like projects.', 'error');
                 return;
             }
-
             try {
-                const response = await fetchData(`${API_BASE_URL}/projects/${projectId}/like/`, {
-                    method: 'POST',
-                    body: JSON.stringify({}), // Empty body is fine for toggle
-                });
-
-                // Update the project's state immediately
-                let projectToUpdate = currentState.projects.find(p => p.id === projectId);
-                if (projectToUpdate) {
-                    projectToUpdate.likes_count = response.likes_count;
-                    // For the detail modal
-                    if (currentState.currentProjectDetail && currentState.currentProjectDetail.id === projectId) {
-                        currentState.currentProjectDetail.likes_count = response.likes_count;
-                        currentState.currentProjectDetail.user_has_liked = response.action === 'liked';
-                        renderProjectDetailModal(); // Re-render modal to show changes
-                    }
-                    renderApp(); // Re-render dashboard list to show changes
-                }
+                const response = await fetchData(`${API_BASE_URL}/projects/${projectId}/like/`, { method: 'POST', body: JSON.stringify({}) });
+                const projectInList = currentState.projects.find(p => p.id === projectId);
+                if (projectInList) projectInList.likes_count = response.likes_count;
                 
-                showMessage(`Project ${response.action}!`, 'success');
-
+                if (currentState.currentProjectDetail?.id === projectId) {
+                    currentState.currentProjectDetail.likes_count = response.likes_count;
+                    currentState.currentProjectDetail.user_has_liked = response.action === 'liked';
+                    renderProjectDetailModal(); // Re-render modal
+                }
+                renderApp(); // Re-render dashboard
             } catch (error) {
                 showMessage(`Like failed: ${error.message}`, 'error');
             }
@@ -278,300 +243,162 @@
 
         async function handlePostComment(event, projectId) {
             event.preventDefault();
-            if (!currentState.user) {
-                showMessage('You must be logged in to comment.', 'error');
-                return;
-            }
-            
-            const form = event.target;
-            const content = form.elements.comment_content.value.trim();
-
-            if (!content) {
-                showMessage('Comment cannot be empty.', 'error');
-                return;
-            }
-
+            const content = event.target.elements.comment_content.value.trim();
+            if (!content) return;
             try {
-                const newComment = await fetchData(`${API_BASE_URL}/projects/${projectId}/comments/`, {
-                    method: 'POST',
-                    body: JSON.stringify({ content }),
-                });
-
-                // Update state and re-render the modal
-                if (currentState.currentProjectDetail && currentState.currentProjectDetail.id === projectId) {
-                    currentState.currentProjectDetail.comments.push(newComment);
-                    form.reset();
-                    renderProjectDetailModal();
-                }
-                showMessage('Comment posted!', 'success');
+                const newComment = await fetchData(`${API_BASE_URL}/projects/${projectId}/comments/`, { method: 'POST', body: JSON.stringify({ content }) });
+                currentState.currentProjectDetail.comments.unshift(newComment); // Add to top
+                event.target.reset();
+                renderProjectDetailModal();
             } catch (error) {
                 showMessage(`Comment failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // NEW: Handle comment deletion
+        async function handleDeleteComment(projectId, commentId) {
+            if (!confirm('Are you sure you want to delete this comment?')) return;
+            try {
+                await fetchData(`${API_BASE_URL}/projects/${projectId}/comments/${commentId}/`, { method: 'DELETE' });
+                currentState.currentProjectDetail.comments = currentState.currentProjectDetail.comments.filter(c => c.id !== commentId);
+                renderProjectDetailModal();
+                showMessage('Comment deleted.', 'success');
+            } catch (error) {
+                showMessage(`Could not delete comment: ${error.message}`, 'error');
             }
         }
 
 
         // --- Rendering Logic ---
-
         function renderAuthView() {
-            // ... (Auth forms remain largely the same, but default view is now login)
-             return `
+            return `
                 <div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-2xl">
                     <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Access Hub</h2>
-                    
-                    <div class="flex space-x-4 mb-6">
-                        <button onclick="currentState.view='login'; renderApp()" 
-                                class="flex-1 p-3 text-center rounded-lg font-medium transition duration-200 
-                                ${currentState.view === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-indigo-50'}">
-                            Login
-                        </button>
-                        <button onclick="currentState.view='register'; renderApp()" 
-                                class="flex-1 p-3 text-center rounded-lg font-medium transition duration-200 
-                                ${currentState.view === 'register' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-indigo-50'}">
-                            Register
-                        </button>
+                    <div class="flex border border-gray-200 rounded-lg p-1 mb-6">
+                        <button onclick="currentState.view='login'; renderApp()" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'login' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Login</button>
+                        <button onclick="currentState.view='register'; renderApp()" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'register' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Register</button>
                     </div>
-
                     ${currentState.view === 'login' ? renderLoginForm() : renderRegisterForm()}
-                </div>
-            `;
+                </div>`;
         }
-
-        function renderLoginForm() {
-            return `
-                <form id="login-form" onsubmit="handleAuthForm(event, 'login')">
-                    <div class="mb-5">
-                        <label for="username_login" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                        <input type="text" id="username_login" name="username" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                    </div>
-                    <div class="mb-6">
-                        <label for="password_login" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" id="password_login" name="password" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                    </div>
-                    <button type="submit" 
-                            class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md">
-                        Sign In
-                    </button>
-                </form>
-            `;
+        function renderLoginForm() { /* Unchanged from your version, but with updated button colors */
+             return `<form onsubmit="handleAuthForm(event, 'login')">
+                    <div class="mb-4"><label for="u_login" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_login" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <div class="mb-5"><label for="p_login" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_login" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow">Sign In</button>
+                </form>`;
         }
-        
-        function renderRegisterForm() {
-             return `
-                <form id="register-form" onsubmit="handleAuthForm(event, 'register')">
-                    <div class="mb-4">
-                        <label for="username_register" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                        <input type="text" id="username_register" name="username" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                    </div>
-                    <div class="mb-4">
-                        <label for="email_register" class="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
-                        <input type="email" id="email_register" name="email" 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                    </div>
-                    <div class="mb-6">
-                        <label for="password_register" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" id="password_register" name="password" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                    </div>
-                    <button type="submit" 
-                            class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md">
-                        Register Account
-                    </button>
-                </form>
-            `;
+        function renderRegisterForm() { /* Unchanged from your version, but with updated button colors */
+             return `<form onsubmit="handleAuthForm(event, 'register')">
+                    <div class="mb-4"><label for="u_reg" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_reg" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <div class="mb-4"><label for="e_reg" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="e_reg" name="email" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <div class="mb-5"><label for="p_reg" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_reg" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow">Create Account</button>
+                </form>`;
         }
 
         function renderPostForm() {
-            if (!currentState.user) return ''; // Only show if logged in
-
-            const projectTypeOptionsHtml = PROJECT_TYPE_OPTIONS.map(opt => 
-                `<option value="${opt.value}">${opt.label}</option>`
-            ).join('');
-
+            if (!currentState.user) return '';
             return `
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
-                    <h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Post Your Project Demo</h3>
-                    <form id="post-form" onsubmit="handlePostProject(event)" enctype="multipart/form-data">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Share Your Project</h3>
+                    <form onsubmit="handlePostProject(event)" enctype="multipart/form-data">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-4">
-                                <div>
-                                    <label for="title" class="block text-sm font-medium text-gray-700">Project Title *</label>
-                                    <input type="text" id="title" name="title" required
-                                           class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                                </div>
-                                <div>
-                                    <label for="project_url" class="block text-sm font-medium text-gray-700">Demo/Primary Link *</label>
-                                    <input type="url" id="project_url" name="project_url" required
-                                           class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="https://">
-                                </div>
-                                <div>
-                                    <label for="project_type" class="block text-sm font-medium text-gray-700">Category</label>
-                                    <select id="project_type" name="project_type"
-                                            class="mt-1 w-full p-3 border border-gray-300 bg-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                                        ${projectTypeOptionsHtml}
-                                    </select>
-                                </div>
+                                <div><label for="title" class="text-sm font-medium text-gray-700">Project Title *</label><input type="text" name="title" required class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div><label for="project_url" class="text-sm font-medium text-gray-700">Demo/Primary Link *</label><input type="url" name="project_url" required placeholder="https://" class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div><label for="project_type" class="text-sm font-medium text-gray-700">Category</label><select name="project_type" class="mt-1 w-full p-2 border bg-white rounded-lg focus:ring-yellow-500 focus:border-yellow-500">${PROJECT_TYPE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}</select></div>
+                                <div><label for="description" class="text-sm font-medium text-gray-700">Description</label><textarea name="description" rows="5" placeholder="Briefly describe your project..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea></div>
                             </div>
-                            
                             <div class="space-y-4">
-                                <div>
-                                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                                    <textarea id="description" name="description" rows="5"
-                                              class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Briefly describe your project..."></textarea>
-                                </div>
-                                <div class="flex items-center pt-2">
-                                    <input id="is_public" name="is_public" type="checkbox" checked
-                                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <label for="is_public" class="ml-2 block text-sm font-medium text-gray-700">
-                                        Post Publicly (Uncheck for private portfolio)
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="space-y-4">
-                                <div>
-                                    <label for="screenshot" class="block text-sm font-medium text-gray-700">Screenshot (File Upload)</label>
-                                    <input type="file" id="screenshot" name="screenshot" accept="image/*"
-                                           class="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                </div>
-                                <div class="pt-2">
-                                    <label for="screenshot_url_fallback" class="block text-sm font-medium text-gray-700">OR Image Link (Fallback)</label>
-                                    <input type="url" id="screenshot_url_fallback" name="screenshot_url_fallback"
-                                           class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="https://i.imgur.com/image.png">
-                                </div>
+                                <div><label for="screenshot" class="text-sm font-medium text-gray-700">Screenshot (Upload)</label><input type="file" name="screenshot" accept="image/*" class="mt-1 text-sm w-full border rounded-lg p-2"></div>
+                                <div><label for="screenshot_url_fallback" class="text-sm font-medium text-gray-700">OR Image Link (Fallback)</label><input type="url" name="screenshot_url_fallback" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div><label for="source_code_url" class="text-sm font-medium text-gray-700">Source Code Link (e.g., GitHub)</label><input type="url" name="source_code_url" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div class="grid grid-cols-2 gap-2"><label class="col-span-2 text-sm font-medium text-gray-700">Optional Custom Field</label><input type="text" name="custom_field_name" placeholder="Label (e.g., Tech Stack)" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"><input type="text" name="custom_field_value" placeholder="Value (e.g., React, Django)" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div class="flex items-center pt-4"><input name="is_public" type="checkbox" checked class="h-4 w-4 text-blue-600 rounded"><label for="is_public" class="ml-2 text-sm text-gray-700">Make this post public</label></div>
                             </div>
                         </div>
-                        <button type="submit" 
-                                class="mt-6 w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg">
-                            Submit Project Post
-                        </button>
+                        <button type="submit" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-lg">Submit Project</button>
                     </form>
-                </div>
-            `;
+                </div>`;
         }
 
         function renderProjectCard(project) {
-            const imageUrl = project.screenshot_url || 'https://via.placeholder.com/400x250?text=No+Screenshot';
-            
+            const imageUrl = project.screenshot_url || 'https://via.placeholder.com/400x250?text=No+Image';
             return `
-                <div class="bg-white rounded-xl shadow-lg transition duration-300 hover:shadow-xl flex flex-col cursor-pointer" 
-                     onclick="fetchProjectDetail(${project.id})">
-                    
-                    <div class="h-48 rounded-t-xl overflow-hidden">
-                        <img src="${imageUrl}" alt="${project.title} screenshot" 
-                             class="w-full h-full object-cover transition duration-300 hover:scale-105">
-                    </div>
-
+                <div class="bg-white rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col cursor-pointer" onclick="fetchProjectDetail(${project.id})">
+                    <img src="${imageUrl}" alt="${project.title} screenshot" class="w-full h-48 object-cover rounded-t-xl">
                     <div class="p-4 flex flex-col flex-grow">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="text-xl font-bold text-gray-800 truncate">${project.title}</h4>
-                            <span class="text-xs font-semibold text-indigo-600 bg-indigo-100 px-2 py-1 rounded-full whitespace-nowrap">${project.project_type}</span>
-                        </div>
-                        
+                        <div class="flex justify-between items-start mb-2"><h4 class="text-xl font-bold text-gray-800 pr-2">${project.title}</h4><span class="text-xs font-semibold text-blue-800 bg-blue-100 px-2 py-1 rounded-full whitespace-nowrap">${project.project_type}</span></div>
                         <p class="text-gray-600 mb-3 text-sm flex-grow line-clamp-3">${project.description || 'No description provided.'}</p>
-                        
                         <div class="flex justify-between items-center text-sm text-gray-500 pt-2 border-t mt-auto">
-                            <p>By: <a href="#" onclick="event.stopPropagation(); currentState.view='portfolio'; currentState.portfolioUser='${project.username}'; renderApp()" class="font-medium text-indigo-700 hover:text-indigo-900">${project.username}</a></p>
-                            <div class="flex items-center space-x-3">
-                                <span class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
-                                    ${project.likes_count}
-                                </span>
-                            </div>
+                            <p>By: <a href="#" onclick="event.stopPropagation(); currentState.view='portfolio'; currentState.portfolioUser='${project.username}'; renderApp()" class="font-medium text-blue-700 hover:underline">${project.username}</a></p>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>${project.likes_count}</span>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
         function renderProjectDetailModal() {
             const modal = document.getElementById('project-detail-modal');
-            const contentContainer = document.getElementById('modal-content');
+            const content = document.getElementById('modal-content');
             const p = currentState.currentProjectDetail;
-            
             if (!p) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
+                closeProjectDetailModal();
                 return;
             }
 
-            const likeButtonColor = p.user_has_liked ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300';
-            const likeButtonText = p.user_has_liked ? 'Unlike' : 'Like';
+            // Permissions checks
+            const isOwner = currentState.user?.id === p.user_id;
+            
+            // Generate Buttons
+            const ownerButtons = isOwner ? `<button onclick="handleDeleteProject(${p.id})" class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200">Delete Project</button>` : '';
+            const shareButton = `<button onclick="navigator.clipboard.writeText(window.location.origin + '?project=${p.id}'); showMessage('Link copied to clipboard!')" class="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200">Share</button>`;
+            const sourceCodeButton = p.source_code_url ? `<a href="${p.source_code_url}" target="_blank" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">View Source Code</a>` : '';
+            
+            // Generate Custom Field
+            const customFieldHtml = (p.custom_field_name && p.custom_field_value) ? `
+                <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-1">${p.custom_field_name}</h4>
+                <p class="text-gray-600 whitespace-pre-wrap">${p.custom_field_value}</p>
+            ` : '';
 
-            const resourcesHtml = p.resources && p.resources.length > 0 ? 
-                `<ul class="list-disc pl-5 space-y-2 mt-2">
-                    ${p.resources.map(r => `<li><a href="${r.resource_url}" target="_blank" class="text-indigo-600 hover:underline">${r.name}</a></li>`).join('')}
-                </ul>` : `<p class="text-gray-500">No extra resources provided.</p>`;
+            // Generate Comments
+            const commentsHtml = p.comments?.length > 0 ? p.comments.map(c => `
+                <div class="border-b last:border-b-0 py-3">
+                    <div class="flex justify-between items-start">
+                        <div><p class="font-semibold text-gray-800">${c.username}</p><p class="text-gray-600 text-sm">${c.content}</p></div>
+                        ${(isOwner || currentState.user?.id === c.user_id) ? `<button onclick="handleDeleteComment(${p.id}, ${c.id})" class="text-red-500 hover:text-red-700 text-xs p-1">&times;</button>` : ''}
+                    </div>
+                    <span class="text-xs text-gray-400 mt-1">${new Date(c.created_at).toLocaleString()}</span>
+                </div>`).join('') : `<p class="text-gray-500 text-sm">No comments yet. Be the first!</p>`;
 
-            const commentsHtml = p.comments && p.comments.length > 0 ? 
-                p.comments.map(c => 
-                    `<div class="border-b pb-2 mb-2 text-sm">
-                        <p class="font-semibold text-gray-800">${c.username}:</p>
-                        <p class="text-gray-600 ml-3">${c.content}</p>
-                        <span class="text-xs text-gray-400 block mt-1">${new Date(c.created_at).toLocaleString()}</span>
-                    </div>`
-                ).join('') : `<p class="text-gray-500">No comments yet. Be the first!</p>`;
-
-            contentContainer.innerHTML = `
-                <div class="p-6">
-                    <button class="absolute top-4 right-4 text-gray-600 hover:text-gray-900" 
-                            onclick="closeProjectDetailModal()">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2">
-                            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">${p.title}</h2>
-                            <p class="text-sm font-medium text-indigo-600 mb-4">${p.project_type}</p>
-
-                            <img src="${p.screenshot_url || 'https://via.placeholder.com/800x500?text=No+Screenshot'}" 
-                                 alt="${p.title} screenshot" 
-                                 class="w-full h-auto rounded-lg shadow-xl object-cover max-h-96 mb-6">
-                            
-                            <div class="flex items-center justify-between border-t border-b py-3 mb-6">
-                                <div class="flex items-center space-x-4">
-                                    <button onclick="handleLikeToggle(${p.id})" class="flex items-center p-2 rounded-lg text-sm font-semibold transition duration-200 ${likeButtonColor} ${p.user_has_liked ? 'text-white' : ''}">
-                                        <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>
-                                        ${p.likes_count} ${likeButtonText}
-                                    </button>
-
-                                    <a href="${p.project_url}" target="_blank" class="bg-emerald-500 text-white p-2 rounded-lg text-sm font-semibold hover:bg-emerald-600 transition duration-200">
-                                        View Live Demo
-                                    </a>
+            content.innerHTML = `
+                <div class="p-6 relative">
+                    <button class="absolute top-4 right-4 text-gray-500 hover:text-black" onclick="closeProjectDetailModal()"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                        <div class="lg:col-span-3">
+                            <h2 class="text-3xl font-extrabold text-black mb-1">${p.title}</h2>
+                            <p class="text-sm font-medium text-blue-700 mb-4">${p.project_type} by <a href="#" onclick="event.stopPropagation(); closeProjectDetailModal(); currentState.view='portfolio'; currentState.portfolioUser='${p.username}'; renderApp()" class="font-semibold hover:underline">${p.username}</a></p>
+                            <img src="${p.screenshot_url || 'https://via.placeholder.com/800x500?text=No+Screenshot'}" alt="${p.title}" class="w-full h-auto rounded-lg shadow-xl mb-6">
+                            <div class="flex items-center justify-between gap-4 border-t border-b py-3 mb-6">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="handleLikeToggle(${p.id})" class="flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition ${p.user_has_liked ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">${p.likes_count} ${p.user_has_liked ? 'Unlike' : 'Like'}</button>
+                                    <a href="${p.project_url}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition">View Live Demo</a>
+                                    ${sourceCodeButton}
                                 </div>
-                                <span class="text-sm text-gray-500">
-                                    Posted by: <a href="#" onclick="event.stopPropagation(); closeProjectDetailModal(); currentState.view='portfolio'; currentState.portfolioUser='${p.username}'; renderApp()" class="font-medium text-indigo-700 hover:text-indigo-900">${p.username}</a>
-                                </span>
+                                <div class="flex items-center gap-2">${shareButton} ${ownerButtons}</div>
                             </div>
-
                             <h3 class="text-xl font-semibold text-gray-800 mb-2">Description</h3>
-                            <p class="text-gray-600 mb-6 whitespace-pre-wrap">${p.description || 'No detailed description provided.'}</p>
-                            
-                            <h3 class="text-xl font-semibold text-gray-800 mb-2">Project Resources</h3>
-                            ${resourcesHtml}
+                            <p class="text-gray-600 mb-6 whitespace-pre-wrap">${p.description || 'No description provided.'}</p>
+                            ${customFieldHtml}
                         </div>
-                        
-                        <div class="lg:col-span-1 border-l lg:pl-6">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Comments (${p.comments ? p.comments.length : 0})</h3>
-                            
-                            ${currentState.user ? `
-                                <form onsubmit="handlePostComment(event, ${p.id})" class="mb-6">
-                                    <textarea name="comment_content" rows="3" required placeholder="Add a comment..."
-                                              class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
-                                    <button type="submit" class="mt-2 w-full bg-indigo-500 text-white p-2 rounded-lg text-sm font-semibold hover:bg-indigo-600 transition duration-200">
-                                        Post Comment
-                                    </button>
-                                </form>` : `<p class="text-sm text-red-500 mb-6">Log in to post a comment.</p>`}
-
-                            <div class="max-h-[50vh] overflow-y-auto space-y-4 pr-2">
-                                ${commentsHtml}
-                            </div>
+                        <div class="lg:col-span-2 border-t lg:border-t-0 lg:border-l lg:pl-6">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Comments (${p.comments.length})</h3>
+                            ${currentState.user ? `<form onsubmit="handlePostComment(event, ${p.id})" class="mb-6"><textarea name="comment_content" rows="3" required placeholder="Add a comment..." class="w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea><button type="submit" class="mt-2 w-full bg-blue-500 text-white p-2 rounded-lg text-sm font-semibold hover:bg-blue-600">Post Comment</button></form>` : `<p class="text-sm text-red-500 mb-4">Log in to post a comment.</p>`}
+                            <div class="max-h-[50vh] overflow-y-auto space-y-2 pr-2">${commentsHtml}</div>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -580,102 +407,80 @@
             document.getElementById('project-detail-modal').classList.add('hidden');
             document.getElementById('project-detail-modal').classList.remove('flex');
             currentState.currentProjectDetail = null;
+            // Clear the URL parameter without reloading
+            if (window.history.pushState) {
+                const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.pushState({ path: newURL }, '', newURL);
+            }
         }
-
 
         function renderDashboardView() {
             const isPortfolio = currentState.view === 'portfolio';
+            const isSearch = !!currentState.searchQuery;
+            let title = `Community Projects (${currentState.projects.length})`;
+            if (isPortfolio) title = `${currentState.portfolioUser}'s Portfolio`;
+            if (isSearch) title = `Search Results for "${currentState.searchQuery}" (${currentState.projects.length})`;
+
             const projectsHtml = currentState.projects.length > 0
                 ? currentState.projects.map(renderProjectCard).join('')
-                : `<p class="text-center text-gray-500 py-10">No projects found ${isPortfolio ? `for ${currentState.portfolioUser}.` : 'yet. Be the first!'}</p>`;
+                : `<p class="col-span-full text-center text-gray-500 py-10">No projects found.</p>`;
 
             return `
-                <div class="pb-10">
+                <div>
                     ${!isPortfolio ? renderPostForm() : ''}
-                    
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 ${!isPortfolio ? 'mt-10' : ''} border-b pb-3">
-                        ${isPortfolio ? `${currentState.portfolioUser}'s Portfolio` : `Community Projects (${currentState.projects.length})`}
-                    </h2>
-                    
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 mt-8 border-b pb-3">${title}</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         ${projectsHtml}
                     </div>
-                </div>
-            `;
+                </div>`;
         }
         
         function renderHeaderNav() {
-            const navContainer = document.getElementById('nav-actions');
-            if (!navContainer) return;
-            
-            let navHtml = '';
-
+            const nav = document.getElementById('nav-actions');
             if (currentState.user) {
-                // Logged In
-                navHtml = `
+                nav.innerHTML = `
                     <div class="flex items-center space-x-3">
-                        <button onclick="currentState.view='portfolio'; currentState.portfolioUser='${currentState.user.username}'; renderApp()"
-                                class="text-sm font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-lg transition duration-200 bg-indigo-50 hover:bg-indigo-100">
-                            My Portfolio
-                        </button>
-                        <span class="text-sm font-semibold text-gray-700 hidden sm:inline">
-                            Welcome, ${currentState.user.username}!
-                        </span>
-                        <button onclick="handleLogout()" 
-                                class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition duration-200 shadow-md">
-                            Logout
-                        </button>
-                    </div>
-                `;
+                        <button onclick="currentState.view='portfolio'; currentState.portfolioUser='${currentState.user.username}'; renderApp()" class="text-sm font-semibold text-blue-700 hover:text-blue-900 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100">My Portfolio</button>
+                        <button onclick="handleLogout()" class="bg-yellow-500 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition shadow">Logout</button>
+                    </div>`;
             } else {
-                // Logged Out
-                navHtml = `
-                    <button onclick="currentState.view='login'; renderApp()"
-                            class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition duration-200 shadow-md">
-                        Login / Register
-                    </button>
-                `;
+                nav.innerHTML = `<button onclick="currentState.view='login'; renderApp()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow">Login / Register</button>`;
             }
-            navContainer.innerHTML = navHtml;
         }
 
         async function renderApp() {
             const container = document.getElementById('app-container');
-            
-            renderHeaderNav(); // Update nav first
-
+            renderHeaderNav();
             container.innerHTML = `<div class="text-center py-20 text-gray-500">Loading...</div>`;
 
-            if (currentState.view === 'auth' || !currentState.user) {
-                // Only show auth view if not logged in OR explicitly set to auth view
-                if (!currentState.user) currentState.view = 'login'; 
-                container.innerHTML = renderAuthView();
-            } else if (currentState.view === 'portfolio') {
-                // Handle portfolio view
-                await fetchProjects(currentState.portfolioUser);
-                container.innerHTML = renderDashboardView();
-            } else {
-                // Default to dashboard view
-                await fetchProjects();
-                container.innerHTML = renderDashboardView();
+            switch (currentState.view) {
+                case 'login':
+                case 'register':
+                    container.innerHTML = renderAuthView();
+                    break;
+                case 'portfolio':
+                    await fetchProjects(currentState.portfolioUser);
+                    container.innerHTML = renderDashboardView();
+                    break;
+                default: // dashboard
+                    // If not a search result, fetch all projects. Search handles its own fetching.
+                    if (!currentState.searchQuery) await fetchProjects();
+                    container.innerHTML = renderDashboardView();
             }
         }
 
-
         // --- Initialization ---
-
         async function init() {
-            currentState.loading = true;
-            await checkAuth(); // Check and fetch user state
-            currentState.loading = false;
+            await checkAuth();
             
-            // Determine initial view state
-            if (!currentState.user) {
-                 currentState.view = 'auth';
-            } else {
-                currentState.view = 'dashboard';
+            // NEW: Check for project ID in URL for direct linking
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('project');
+            
+            if (projectId) {
+                await fetchProjectDetail(projectId);
             }
-
+            
             renderApp();
         }
 
@@ -683,8 +488,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
