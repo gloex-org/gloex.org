@@ -488,3 +488,540 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOEX.ORG | ELIJUL GROUPS LTD - Digital Solutions in Kigali, Rwanda</title>
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e9eef2;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header & Logo */
+        header {
+            background-color: #008000; /* Deep Green */
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        header img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin: 10px 0 5px;
+            letter-spacing: 5px;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 1.3em;
+            color: #ffcc00;
+        }
+
+        /* Animated Tank Section */
+        .animated-tank-section {
+            background-color: #e9eef2; /* Match body background for a seamless look */
+            text-align: center;
+            padding: 20px 0;
+            overflow: hidden; /* Hide overflow from animation */
+        }
+
+        .tank-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px; /* Adjust height as needed for the image */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tank-image {
+            max-width: 100%;
+            height: auto;
+            animation: bounce 2s infinite alternate; /* Simple bounce animation */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tank-image:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-15px); }
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #e0f7e0;
+            border-bottom: 5px solid #006400;
+        }
+
+        .welcome-section h2 {
+            color: #006400;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section .tagline {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .welcome-section .price-callout {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #ff0000;
+            margin-top: 15px;
+            padding: 10px;
+            border: 2px dashed #ff0000;
+            display: inline-block;
+            background-color: #fffafa;
+        }
+        
+        /* Backend Demo Section */
+        .demo-section {
+            background-color: #5555ff; /* Blue CTA background */
+            padding: 20px;
+            text-align: center;
+        }
+
+        .demo-button {
+            background-color: #ffcc00; /* Yellow button */
+            color: #000;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px; /* Pill shape */
+            transition: background-color 0.3s, transform 0.1s;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .demo-button:hover {
+            background-color: #ffea70;
+            transform: translateY(-2px);
+        }
+
+        .demo-section p {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+
+        /* Services Grid */
+        .services-section {
+            padding: 40px 20px;
+        }
+        
+        .services-section h3 {
+            text-align: center;
+            color: #008000;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #008000;
+            padding-bottom: 10px;
+        }
+
+        .category {
+            margin-bottom: 50px;
+        }
+
+        .category h4 {
+            color: #006400;
+            font-size: 1.8em;
+            border-left: 6px solid #ffcc00;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+
+        .service-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .service-list li {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, background-color 0.2s;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            position: relative; 
+        }
+
+        .service-list li:hover {
+            transform: translateY(-5px);
+            background-color: #f0fff0;
+            border-color: #008000;
+        }
+
+        .service-list strong {
+            display: block;
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .service-list span {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Modal/Overlay Styles FIX */
+        .modal-content {
+            display: none; 
+            padding: 15px;
+            margin-top: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+            position: absolute; 
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        li:hover .modal-content {
+            display: block; 
+            width: 90%;
+            max-width: 500px;
+            top: 100%; 
+            left: 0;
+            transform: translateX(0);
+        }
+
+        /* Contact Section */
+        .contact-info {
+            background-color: #333;
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .contact-info h3 {
+            color: #ffcc00;
+            margin-top: 0;
+            font-size: 2em;
+        }
+
+        .contact-info p {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        
+        .contact-info a {
+            color: #ffcc00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer-address {
+            margin-top: 20px;
+            font-size: 1em;
+            border-top: 1px solid #555;
+            padding-top: 10px;
+        }
+        
+        .footer-logo {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #bbb;
+        }
+
+        .admin-link {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #999;
+            text-decoration: none;
+        }
+        .admin-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="1-1.png" alt="GLOEX.ORG Logo">
+            <h1>GLOEX.ORG</h1>
+            <p>ELIJUL GROUPS LTD</p>
+        </header>
+
+        <div class="animated-tank-section">
+            <div class="tank-wrapper">
+                <img src="tank_picture.png" alt="GLOEX.ORG Services" class="tank-image">
+            </div>
+        </div>
+        <div class="welcome-section">
+            <p style="font-size: 1.1em; color: #000;">DISCOVER</p>
+            <h2>GET YOUR WEBSITE OR SOFTWARE TODAY!</h2>
+            <p class="tagline">WE BUILD ROBUST, AFFORDABLE, AND SCALABLE DIGITAL SOLUTIONS.</p>
+            <p class="price-callout">STARTING FROM 20,000 FRW.</p>
+        </div>
+
+        <div class="demo-section">
+            <p>Want to see our live work in action?</p>
+            <a href="https://bizimanasoftware.pythonanywhere.com" target="_blank" class="demo-button">
+                LAUNCH TALENTHUB-DEMO
+            </a>
+            <a href="https://addproducts.pythonanywhere.com" target="_blank" class="demo-button">
+                LAUNCH E-COMMERCE-DEMO
+            </a>
+             <a href="https://gitlab.com/bizimanasoftware/" target="_blank" class="demo-button">
+                VIEW GITLAB PROJECTS
+            </a>
+            <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO4
+            </a>
+             <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO5
+            </a>
+            <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO6
+            </a>
+             <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO7
+            </a>
+            <a href="#" target="_blank" class="demo-button" background="#008000">
+                LAUNCH DEMO8
+            </a>
+             <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO9
+            </a>
+            <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO10
+            </a>
+        </div>
+        <div class="services-section">
+            <h3> WHAT WE OFFER (STARTING FROM 20,000RWF)</h3>
+
+            <div class="category">
+                <h4>💻 Web, Software & Modern Development</h4>
+                <ul class="service-list">
+                    <li title="Click to learn more about comprehensive platform maintenance.">
+                        <strong>Website Maintenance & Management</strong>
+                        <span>Ensuring your website is secure, fast, and up-to-date. Includes Free Website Management.</span>
+                        <div class="modal-content">
+                            Details: We handle backups, security patching, content updates, and performance optimization so you can focus on your business.
+                        </div>
+                    </li>
+                    <li title="Click to learn about custom web application and API creation.">
+                        <strong>Custom Web/Mobile Application Development</strong>
+                        <span>Building unique, large-scale software solutions for complex business needs.</span>
+                        <div class="modal-content">
+                            Details: From bespoke internal tools to public-facing applications, we use modern frameworks (like React, Node.js) to deliver high performance.
+                        </div>
+                    </li>
+                    <li title="Click to learn about integrating AI features.">
+                        <strong>Advanced API & AI Integration</strong>
+                        <span>Connecting your systems and embedding intelligent features like chatbots and data analysis.</span>
+                        <div class="modal-content">
+                            Details: We integrate third-party APIs (e.g., payment gateways) and implement Machine Learning models to automate tasks and provide deep insights.
+                        </div>
+                    </li>
+                    <li title="Click to learn about e-commerce platforms.">
+                        <strong>Ecommerce Stores & Online Payments</strong>
+                        <span>Creating powerful online shops and integrating secure payment gateways for global transactions.</span>
+                        <div class="modal-content">
+                            Details: Full-stack e-commerce solutions, product management, secure payment processing, and inventory synchronization.
+                        </div>
+                    </li>
+                </ul>
+                <h4 style="margin-top: 30px;">Specific Website Types</h4>
+                <ul class="service-list">
+                    <li><strong>School & E-learning/LMS Platforms</strong></li>
+                    <li><strong>Hospital & Clinic Websites</strong></li>
+                    <li><strong>Hotel & Bar Reservation Systems</strong></li>
+                    <li><strong>Business & Corporate Sites</strong></li>
+                    <li><strong>Personal Blogs & Media Sites</strong></li>
+                </ul>
+            </div>
+
+            <div class="category">
+                <h4>💼 Business Automation & Financial Systems</h4>
+                <ul class="service-list">
+                    <li>
+                        <strong>Billing, POS & Invoicing Systems</strong>
+                        <span>Streamlining sales, inventory tracking, and client billing for retail and service industries.</span>
+                        <div class="modal-content">
+                            Details: Customized Point-of-Sale (POS) systems, automated invoicing, and sales reporting tools for financial clarity.
+                        </div>
+                    </li>
+                    <li>
+                        <strong>HR, Payroll & CRM Tools</strong>
+                        <span>Managing your workforce and client relationships efficiently in one centralized system.</span>
+                        <div class="modal-content">
+                            Details: Tools for staff management, automated salary calculation, and Customer Relationship Management (CRM) to track leads and support history.
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Stock & Inventory Management Systems</strong>
+                        <span>Keeping track of assets, stock levels, and supply chains in real-time.</span>
+                        <div class="modal-content">
+                            Details: Automated low-stock alerts, multi-warehouse support, and detailed reporting to minimize loss and optimize purchasing.
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Ticketing Systems & Customer Support</strong>
+                        <span>Professional systems for managing support queries, help desks, and technical requests.</span>
+                        <div class="modal-content">
+                            Details: Efficient help desk software, ticket prioritization, and integrated knowledge bases for faster customer resolution.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="category">
+                <h4>🔒 Cyber Security & Data Solutions</h4>
+                <ul class="service-list">
+                    <li title="Click to learn about our security services.">
+                        <strong>Proactive Cyber Security Support</strong>
+                        <span>Protecting your digital assets from threats with monitoring, patching, and defense strategies.</span>
+                        <div class="modal-content">
+                            Details: Security audits, firewall configuration, regular vulnerability scanning, and quick incident response to keep your data safe.
+                        </div>
+                    </li>
+                    <li title="Click to learn about hosting and infrastructure.">
+                        <strong>Cloud Infrastructure & Deployment (DevOps)</strong>
+                        <span>Setting up secure, scalable, and high-availability cloud hosting environments (e.g., AWS, Azure).</span>
+                        <div class="modal-content">
+                            Details: Professional deployment, automated scaling, continuous integration/continuous deployment (CI/CD) pipelines, and server management.
+                        </div>
+                    </li>
+                    <li title="Click to learn about data reporting.">
+                        <strong>Data Analytics Board & Business Intelligence</strong>
+                        <span>Turning raw data into actionable insights with custom dashboards and reporting tools.</span>
+                        <div class="modal-content">
+                            Details: We connect your various systems to create a unified dashboard for visualizing key performance indicators (KPIs) and business health.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="category">
+                <h4>📈 Marketing & Branding Services</h4>
+                <ul class="service-list">
+                    <li>
+                        <strong>SEO Services & Digital Marketing</strong>
+                        <span>Optimizing your site to rank higher in search results (Google, Bing).</span>
+                    </li>
+                    <li>
+                        <strong>Logo Branding & Graphic Design</strong>
+                        <span>Creating professional, memorable logos and visual assets for your brand identity.</span>
+                    </li>
+                    <li>
+                        <strong>SMS/Email Marketing Campaigns</strong>
+                        <span>Reaching your audience directly with targeted and effective communication strategies.</span>
+                    </li>
+                    <li>
+                        <strong>Email Setup & Professional Hosting</strong>
+                        <span>Setting up professional email addresses (e.g., *you@yourcompany.com*) and secure email hosting.</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="demo-section">
+            <p>want to download some popular free-ope-source-projects?</p>
+            <a href="https://github.com/django-oscar/django-oscar" target="_blank" class="demo-button">
+                E-COMMERCE
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button" background="#008000">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+        </div>
+            
+        </div>
+
+        <div class="contact-info">
+            <h3>📞 Ready to Start Your Project?</h3>
+            <p>Contact the ELIJUL GROUPS LTD team today.</p>
+            <p>Website: <a href="https://www.gloex.org">WWW.GLOEX.ORG</a></p>
+            <p>Email: <a href="mailto:infogloex@proton.me">infogloex@proton.me     (webs&software)</a></p>
+            <p>Email: <a href="mailto:info@gloex.org">info@gloex.org     (for partnership)</a></p>
+            <p>Phone/WhatsApp: +250788660513</p>
+            <p class="footer-address">
+                Address: Kigali, Rwanda
+            </p>
+            <p class="footer-logo">TWUBAKA-WEB</p>
+            <a href="#" class="">projects</a>
+        </div>
+    </div>
+
+</body>
+</html>
