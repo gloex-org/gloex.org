@@ -6,25 +6,31 @@
     <title>gloEx Project Hub - Innovation Showcase</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Set Inter Font as default -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Load Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, query, onSnapshot, addDoc, serverTimestamp, setLogLevel, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, query, onSnapshot, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // --- Global Firebase and Application Variables ---
+        // These variables are provided by the canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
-        setLogLevel('error'); // Set log level
+        // Set Firebase logging level
+        setLogLevel('error'); 
         
         let app = null;
         let db = null;
         let auth = null;
         let userId = null;
 
-        // --- Application State Management (as per original file structure) ---
+        // --- Application State Management (Central Feature) ---
+        // This object controls the current view and data displayed.
         window.currentState = {
             view: 'dashboard', // 'dashboard', 'project-details', 'upload'
             selectedProjectId: null,
@@ -64,17 +70,15 @@
             }
         };
 
-        // --- Firestore Data Management ---
+        // --- Firestore Data Management (The working feature) ---
         const getProjectsCollectionRef = () => {
-            // Using public data storage for a project showcase (shared data)
+            // Using public data storage for a shared project showcase
             return collection(db, `artifacts/${appId}/public/data/projects`);
         };
 
         const startProjectListener = () => {
              if (!db) { return; }
 
-             // Set up a query. Firestore doesn't support easy sorting without indexes, 
-             // so we'll fetch all and sort by timestamp/title in JS.
              const q = query(getProjectsCollectionRef());
 
              onSnapshot(q, (snapshot) => {
@@ -84,7 +88,14 @@
                 });
                 // Sort by creation time (descending) in memory
                 projects.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                window.currentState.projects = projects;
+                
+                // If the database is empty, fall back to mock data
+                if (projects.length === 0) {
+                     window.currentState.projects = mockProjects;
+                } else {
+                     window.currentState.projects = projects;
+                }
+                
                 window.renderApp(); // Re-render the app on data change
              }, (error) => {
                  console.error("Error listening to projects:", error);
@@ -94,11 +105,10 @@
         window.submitNewProject = async (projectData) => {
             if (!db) { 
                 console.error("Database not initialized.");
-                alert("Submission failed: Database not ready."); 
+                showMessage("Submission failed: Database not ready.", 'error'); 
                 return; 
             }
             try {
-                // Add userId to the project data for attribution
                 const newProject = {
                     ...projectData,
                     authorId: userId,
@@ -107,26 +117,71 @@
                 await addDoc(getProjectsCollectionRef(), newProject);
                 window.currentState.view = 'dashboard';
                 window.renderApp();
-                // Instead of alert, use a custom message box
-                document.getElementById('messageBox').innerHTML = '<div class="bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-3 rounded relative" role="alert"><strong class="font-bold">Success!</strong><span class="block sm:inline"> Your project has been submitted.</span></div>';
-                setTimeout(() => document.getElementById('messageBox').innerHTML = '', 3000);
-
+                showMessage("Success! Your project has been submitted.", 'success');
             } catch (e) {
                 console.error("Error adding document: ", e);
-                 document.getElementById('messageBox').innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"><strong class="font-bold">Error!</strong><span class="block sm:inline"> Submission failed. Check console for details.</span></div>';
+                showMessage("Submission failed. Check console for details.", 'error');
             }
         };
         
-        // Initialize everything on load
         initFirebase();
     </script>
+    
     <style>
-        /* General Styles for Inter Font and smooth transitions */
+        /* Base Styles and Green Theme */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Light background for contrast */
+            background-color: #f7f7f7; 
+            color: #1f2937;
         }
-        
+
+        /* Green Button Styles */
+        .green-button {
+            background-color: #059669; /* Emerald 600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .green-button:hover {
+            background-color: #047857; /* Emerald 700 */
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Custom Wave Animation for Hero Section (Animated Picture) */
+        .wave-animation {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+        }
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 40%;
+            opacity: 0.3;
+        }
+        .wave-1 {
+            background: #38bdf8; /* Sky Blue */
+            animation: wave-motion 15s linear infinite;
+        }
+        .wave-2 {
+            background: #f472b6; /* Rose Pink */
+            animation: wave-motion 20s linear infinite reverse;
+        }
+        @keyframes wave-motion {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1.0); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1.0); }
+        }
+
         /* Utility for line clamping */
         .line-clamp-3 {
             overflow: hidden;
@@ -135,75 +190,28 @@
             -webkit-line-clamp: 3;
         }
 
-        /* Modern Green Button Style */
-        .green-button {
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-        }
-
-        .green-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Animated Picture Placeholder - CSS Wave Animation */
-        .wave-container {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            border-radius: 1rem;
-        }
-
-        .wave {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(180deg, rgba(236, 254, 255, 0.5) 0%, rgba(199, 210, 254, 0.5) 100%);
-            border-radius: 1rem;
-        }
-
-        .wave:nth-child(1) {
-            background-color: rgba(6, 182, 212, 0.2); /* Cyan */
-            animation: wave-motion 8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
-        }
-        .wave:nth-child(2) {
-            background-color: rgba(244, 114, 182, 0.2); /* Rose */
-            animation: wave-motion 10s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate reverse;
-        }
-
-        @keyframes wave-motion {
-            0% {
-                transform: translate(0, 0) rotate(0deg) scale(1, 1);
-            }
-            100% {
-                transform: translate(5%, 10%) rotate(5deg) scale(1.1, 1.2);
-            }
-        }
-
         /* Custom Scrollbar for better UX */
         ::-webkit-scrollbar {
             width: 8px;
         }
         ::-webkit-scrollbar-thumb {
-            background-color: #047857; /* Dark Green */
+            background-color: #059669; /* Green */
             border-radius: 4px;
         }
         ::-webkit-scrollbar-track {
-            background-color: #e5e7eb; /* Light Gray */
+            background-color: #e5e7eb;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <!-- Message Box Placeholder -->
-    <div id="messageBox" class="fixed top-4 right-4 z-50"></div>
+    <div id="messageBox" class="fixed top-4 right-4 z-50 transition-opacity duration-300"></div>
 
     <!-- HEADER (Green) -->
-    <header class="bg-emerald-700 shadow-xl p-4 sticky top-0 z-20">
+    <header class="bg-emerald-600 shadow-2xl p-4 sticky top-0 z-20">
         <div class="container mx-auto flex flex-wrap justify-between items-center gap-4">
-            <!-- Logo (Well Positioned) -->
+            <!-- Logo (Well Positioned and Animated) -->
             <h1 class="text-3xl font-extrabold text-white tracking-wider animate-pulse">
                 <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="appTitle" class="transition duration-300 hover:text-emerald-200">
                     <span class="text-emerald-300">G</span>loEx <span class="text-emerald-300">H</span>ub
@@ -230,10 +238,10 @@
             <nav class="flex space-x-3">
                 <button 
                     onclick="window.currentState.view='upload'; window.renderApp();" 
-                    class="green-button bg-emerald-500 text-white font-semibold py-2 px-4 rounded-full hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 shadow-lg whitespace-nowrap text-sm md:text-base">
-                    Upload Project
+                    class="green-button text-sm md:text-base px-4 py-2 hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-300 shadow-lg whitespace-nowrap">
+                    Upload Demo
                 </button>
-                <a href="https://www.gloex.org" target="_blank" class="green-button bg-transparent border-2 border-white text-white font-semibold py-2 px-4 rounded-full hover:bg-white hover:text-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 shadow-lg text-sm md:text-base">
+                <a href="https://www.gloex.org" target="_blank" class="green-button bg-transparent border-2 border-white text-white text-sm md:text-base px-4 py-2 hover:bg-white hover:text-emerald-700 focus:ring-4 focus:ring-emerald-300 transition duration-300 shadow-lg">
                     Main Site
                 </a>
             </nav>
@@ -247,19 +255,24 @@
     <footer class="bg-emerald-800 text-white p-8 mt-auto shadow-inner">
         <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
             
-            <!-- Section 1: Contact Info -->
+            <!-- Section 1: Contact Info (Reused from original snippet) -->
             <div class="contact-info">
-                <h3 class="text-2xl font-bold mb-3 text-emerald-200">Ready to Start?</h3>
-                <p class="text-sm mb-4">Contact the ELIJUL GROUPS LTD team today for professional solutions.</p>
-                <p class="mb-1">
+                <h3 class="text-xl font-bold mb-3 text-emerald-200">Ready to Start Your Project?</h3>
+                <p class="text-sm mb-4">Contact the ELIJUL GROUPS LTD team today.</p>
+                
+                <p class="mb-1 text-sm">
+                    <span class="font-semibold text-emerald-300">Website:</span> 
+                    <a href="https://www.gloex.org" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">WWW.GLOEX.ORG</a>
+                </p>
+                <p class="mb-1 text-sm">
                     <span class="font-semibold text-emerald-300">Email (Web/Software):</span> 
                     <a href="mailto:infogloex@proton.me" class="text-emerald-100 hover:text-white transition duration-200">infogloex@proton.me</a>
                 </p>
-                <p class="mb-1">
+                <p class="mb-1 text-sm">
                     <span class="font-semibold text-emerald-300">Email (Partnership):</span> 
                     <a href="mailto:info@gloex.org" class="text-emerald-100 hover:text-white transition duration-200">info@gloex.org</a>
                 </p>
-                <p class="mb-1">
+                <p class="mb-1 text-sm">
                     <span class="font-semibold text-emerald-300">Phone/WhatsApp:</span> +250 788 660 513
                 </p>
                 <p class="mt-4 text-sm opacity-80">
@@ -272,37 +285,37 @@
                 <h3 class="text-xl font-bold mb-3 text-emerald-200">Quick Links</h3>
                 <ul class="space-y-2 text-sm">
                     <li><a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">Project Dashboard</a></li>
-                    <li><a href="https://www.gloex.org" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Official Website</a></li>
-                    <li><a href="#" class="text-emerald-100 hover:text-white transition duration-200">Services</a></li>
+                    <li><a href="https://www.gloex.org/about" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">About Us</a></li>
+                    <li><a href="https://www.gloex.org/services" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Our Services</a></li>
                     <li><a href="#" class="text-emerald-100 hover:text-white transition duration-200">Privacy Policy</a></li>
                 </ul>
             </div>
 
-            <!-- Section 3: Popular Tags -->
+            <!-- Section 3: Project Links -->
             <div>
-                <h3 class="text-xl font-bold mb-3 text-emerald-200">Popular Categories</h3>
-                <div class="flex flex-wrap gap-2 text-xs">
-                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">WebDev</span>
-                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">AI/ML</span>
-                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">Mobile</span>
-                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">DataViz</span>
-                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">OpenSource</span>
-                </div>
+                <h3 class="text-xl font-bold mb-3 text-emerald-200">Get Free Projects</h3>
+                <ul class="space-y-2 text-sm">
+                    <!-- Replicating the "DOWNLOAD FREE PROJECTS" links -->
+                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Web Development Demos</a></li>
+                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Data Science Templates</a></li>
+                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Mobile App Snippets</a></li>
+                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Open Source Utilities</a></li>
+                </ul>
             </div>
 
-            <!-- Section 4: Call to Action (Green) -->
+            <!-- Section 4: Call to Action (More Attractive CTA) -->
              <div class="text-center md:text-left">
                 <h3 class="text-xl font-bold mb-3 text-emerald-200">Join the Community</h3>
-                <p class="mb-4 text-sm">Share your innovation and get feedback from global developers.</p>
+                <p class="mb-4 text-sm">Share your innovation and connect with global developers.</p>
                 <button 
                     onclick="window.currentState.view='upload'; window.renderApp();" 
-                    class="green-button bg-emerald-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 w-full md:w-auto">
+                    class="green-button font-bold py-3 px-6 rounded-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300 w-full md:w-auto transition duration-300">
                     START SHARING NOW
                 </button>
             </div>
         </div>
 
-        <!-- Copyright -->
+        <!-- Copyright (Reused Footer Logo Text) -->
         <div class="mt-8 pt-4 border-t border-emerald-700 text-center text-sm opacity-75">
             <p> &copy; 2025 ELIJUL GROUPS LTD. TWUBAKA-UBUMENYI. All rights reserved.</p>
         </div>
@@ -310,37 +323,62 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Placeholder Project Data (Will be replaced by Firebase data)
+        // Placeholder Project Data (Used if Firestore data is empty or unavailable)
         const mockProjects = [
-            { id: 'p1', title: 'AI-Powered Stock Predictor', description: 'A Python-based machine learning model using LSTM networks to forecast stock market trends. 95% accuracy on historical data.', image: 'https://placehold.co/400x250/06b6d4/ffffff?text=AI+Model', tags: ['AI', 'Python', 'Finance'], author: 'Jane Doe', views: 1200, demoUrl: 'https://github.com/' },
-            { id: 'p2', title: 'Modern React E-commerce UI', description: 'A sleek, responsive e-commerce front-end built with React and Tailwind CSS, focusing on mobile-first design and accessibility.', image: 'https://placehold.co/400x250/f472b6/ffffff?text=React+UI', tags: ['React', 'WebDev', 'Frontend'], author: 'John Smith', views: 850, demoUrl: 'https://github.com/' },
-            { id: 'p3', title: 'Open Source IoT Dashboard', description: 'Real-time data visualization dashboard for home automation sensors using Node.js and D3.js. Easily extendable architecture.', image: 'https://placehold.co/400x250/4ade80/000000?text=IoT+Dashboard', tags: ['IoT', 'Node.js', 'DataViz'], author: 'Alice Brown', views: 420, demoUrl: 'https://github.com/' },
-            { id: 'p4', title: 'Game Engine in C++', description: 'A lightweight 2D game engine written from scratch in C++ with OpenGL rendering. Includes collision detection and basic physics.', image: 'https://placehold.co/400x250/fb7185/ffffff?text=C%2B%2B+Game', tags: ['C++', 'Gaming', 'Engine'], author: 'Bob Green', views: 2100, demoUrl: 'https://github.com/' },
+            { id: 'p1', title: 'AI-Powered Stock Predictor', description: 'A Python-based machine learning model using LSTM networks to forecast stock market trends. Includes a web interface for real-time data.', image: 'https://placehold.co/400x250/0ea5e9/ffffff?text=AI+Model', tags: ['AI', 'Python', 'Finance'], author: 'Jane Doe', views: 1200, demoUrl: 'https://github.com/gloex-ai-finance' },
+            { id: 'p2', title: 'Modern React E-commerce UI', description: 'A sleek, responsive e-commerce front-end built with React and Tailwind CSS, focusing on mobile-first design and accessibility. Integrates dummy payment API.', image: 'https://placehold.co/400x250/ec4899/ffffff?text=React+UI', tags: ['React', 'WebDev', 'Frontend'], author: 'John Smith', views: 850, demoUrl: 'https://github.com/gloex-react-shop' },
+            { id: 'p3', title: 'Open Source IoT Dashboard', description: 'Real-time data visualization dashboard for home automation sensors using Node.js and D3.js. Easily extendable architecture for new sensors.', image: 'https://placehold.co/400x250/22c55e/000000?text=IoT+Dashboard', tags: ['IoT', 'Node.js', 'DataViz'], author: 'Alice Brown', views: 420, demoUrl: 'https://github.com/gloex-iot-dash' },
         ];
         
-        // Initial state load
+        // Use mock data until Firebase connects
         if (window.currentState.projects.length === 0) {
             window.currentState.projects = mockProjects;
         }
 
         const appContainer = document.getElementById('appContainer');
 
+        /**
+         * Custom message box function (replaces alert())
+         * @param {string} message 
+         * @param {string} type 'success' or 'error'
+         */
+        function showMessage(message, type) {
+            const box = document.getElementById('messageBox');
+            const colorClass = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
+            
+            box.innerHTML = `
+                <div class="shadow-xl px-4 py-3 rounded relative border ${colorClass}" role="alert">
+                    <strong class="font-bold">${type === 'success' ? 'Success!' : 'Error!'}</strong>
+                    <span class="block sm:inline ml-2">${message}</span>
+                </div>
+            `;
+            box.classList.remove('opacity-0');
+            box.classList.add('opacity-100');
+
+            setTimeout(() => {
+                box.classList.remove('opacity-100');
+                box.classList.add('opacity-0');
+                setTimeout(() => box.innerHTML = '', 300);
+            }, 3000);
+        }
+
+
         // --- View Rendering Functions ---
 
-        // 1. Dashboard View (Landing page, Hero, CTA, Project Grid)
+        // 1. Dashboard View
         const renderDashboard = () => {
             const { projects, searchText } = window.currentState;
 
+            // Filter logic (working feature)
             const filteredProjects = projects.filter(p => 
-                p.title.toLowerCase().includes(searchText.toLowerCase()) || 
-                p.description.toLowerCase().includes(searchText.toLowerCase()) ||
-                p.tags.some(tag => tag.toLowerCase().includes(searchText.toLowerCase())) ||
-                p.author.toLowerCase().includes(searchText.toLowerCase())
+                (p.title || '').toLowerCase().includes(searchText.toLowerCase()) || 
+                (p.description || '').toLowerCase().includes(searchText.toLowerCase()) ||
+                (p.author || '').toLowerCase().includes(searchText.toLowerCase()) ||
+                (p.tags || []).some(tag => tag.toLowerCase().includes(searchText.toLowerCase()))
             );
 
-            // Function to generate a single project card
+            // Generate a single project card (Attractive Cards)
             const generateProjectCard = (project) => {
-                // Alternating card colors (Blue and Pink) for modern look
                 const isBlue = project.id.charCodeAt(project.id.length - 1) % 2 === 0;
                 const bgColor = isBlue ? 'bg-sky-50' : 'bg-rose-50';
                 const borderColor = isBlue ? 'border-sky-300' : 'border-rose-300';
@@ -349,19 +387,19 @@
 
                 return `
                     <div onclick="window.currentState.selectedProjectId='${project.id}'; window.currentState.view='project-details'; window.renderApp();" 
-                         class="transform transition duration-500 hover:scale-[1.02] cursor-pointer rounded-xl overflow-hidden shadow-2xl ${bgColor} border ${borderColor} flex flex-col h-full">
-                        <img src="${project.image}" alt="${project.title} Preview" class="w-full h-40 object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x250/ccc/000?text=Image+Not+Found'">
+                         class="transform transition duration-500 hover:scale-[1.03] cursor-pointer rounded-xl overflow-hidden shadow-xl ${bgColor} border ${borderColor} flex flex-col h-full hover:shadow-2xl">
+                        <img src="${project.image}" alt="${project.title} Preview" class="w-full h-48 object-cover transition duration-300 hover:opacity-90" onerror="this.onerror=null; this.src='https://placehold.co/400x250/f7f7f7/6b7280?text=Image+Missing'">
                         <div class="p-6 flex flex-col justify-between flex-grow">
                             <div>
-                                <h3 class="font-bold text-xl mb-2 ${textColor}">${project.title}</h3>
-                                <p class="text-gray-600 text-sm line-clamp-3 mb-3">${project.description}</p>
+                                <h3 class="font-extrabold text-xl mb-2 ${textColor} truncate">${project.title}</h3>
+                                <p class="text-gray-600 text-sm line-clamp-3 mb-4">${project.description}</p>
                             </div>
                             <div>
                                 <div class="flex flex-wrap gap-2 mb-4">
-                                    ${project.tags.map(tag => `<span class="text-xs font-semibold px-3 py-1 rounded-full ${tagColor}">${tag}</span>`).join('')}
+                                    ${(project.tags || []).map(tag => `<span class="text-xs font-semibold px-3 py-1 rounded-full ${tagColor}">${tag}</span>`).join('')}
                                 </div>
                                 <a href="${project.demoUrl}" target="_blank" onclick="event.stopPropagation();" 
-                                   class="green-button inline-flex items-center justify-center bg-emerald-500 text-white font-semibold py-2 px-4 rounded-lg text-sm hover:bg-emerald-600 w-full transition duration-300">
+                                   class="green-button inline-flex items-center justify-center text-sm w-full transition duration-300 hover:ring-2 hover:ring-offset-2 hover:ring-emerald-500">
                                     <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                     View Demo
                                 </a>
@@ -371,55 +409,52 @@
                 `;
             };
 
-            // Main Dashboard HTML structure
             appContainer.innerHTML = `
-                <!-- HERO SECTION (Animated Picture & Blue/Pink Background) -->
-                <section class="bg-gradient-to-br from-sky-100 to-rose-100 p-8 md:p-16 relative overflow-hidden">
-                    <div class="wave-container absolute inset-0 -z-10">
-                        <div class="wave transform scale-[1.5]"></div>
-                        <div class="wave transform scale-[1.3]"></div>
+                <!-- HERO SECTION (Blue/Pink Section & Animated Picture) -->
+                <section class="bg-gradient-to-br from-sky-50 to-rose-50 p-8 md:p-16 relative overflow-hidden">
+                    <div class="wave-animation absolute inset-0">
+                        <div class="wave wave-1"></div>
+                        <div class="wave wave-2"></div>
                     </div>
 
-                    <div class="container mx-auto flex flex-col md:flex-row items-center gap-10 relative z-10">
-                        <!-- Hero Text and Call to Action -->
+                    <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
+                        <!-- Hero Text and CTA -->
                         <div class="md:w-1/2 text-center md:text-left">
                             <h2 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
-                                Showcase Your <span class="text-emerald-600">Innovation.</span> Get Discovered.
+                                <span class="text-emerald-600">Accelerate</span> Your Innovation Pipeline.
                             </h2>
                             <p class="text-xl text-gray-700 mb-8">
-                                The gloEx Hub is where creators share their working demos, connecting ideas with opportunities.
+                                The gloEx Hub is a curated showcase for working demos—where brilliant code meets opportunity.
                             </p>
                             
-                            <!-- Call to Actions (Green Buttons) -->
+                            <!-- Attractive Call to Actions (Green) -->
                             <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                                 <button 
                                     onclick="window.currentState.view='upload'; window.renderApp();" 
-                                    class="green-button bg-emerald-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-300 shadow-xl">
-                                    START SHARING (It's Free!)
+                                    class="green-button text-lg shadow-xl hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300">
+                                    <span class="animate-pulse">SHARE YOUR PROJECT</span>
                                 </button>
-                                <a href="#projects" class="green-button bg-transparent border-2 border-emerald-600 text-emerald-800 font-bold py-3 px-8 rounded-lg text-lg hover:bg-emerald-600 hover:text-white transition duration-300 shadow-lg">
-                                    BROWSE PROJECTS
+                                <a href="#projects" class="green-button bg-transparent border-2 border-emerald-600 text-emerald-800 font-bold hover:bg-emerald-600 hover:text-white transition duration-300 shadow-lg">
+                                    BROWSE LATEST
                                 </a>
                             </div>
                         </div>
 
-                        <!-- Animated Picture Placeholder -->
+                        <!-- Animated Picture (Well Positioned) -->
                         <div class="md:w-1/2 h-64 md:h-96 relative flex items-center justify-center">
-                            <!-- Placeholder for Animated Picture (Icon/Illustration) -->
-                            <div class="text-9xl text-emerald-400 opacity-80 transform transition duration-1000 animate-bounce">
-                                <svg class="w-24 h-24 md:w-40 md:h-40 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7.5 3.75C7.5 3.75 6.75 3 6 3c-.75 0-1.5.75-1.5 1.5S4.5 6 5.25 6s1.5-.75 1.5-1.5zm10.5 0c-.75 0-1.5.75-1.5 1.5s.75 1.5 1.5 1.5 1.5-.75 1.5-1.5-.75-1.5-1.5-1.5zM12 10.5v5.25m-2.25-3h4.5M14.25 18c-2.75 0-4.5 1.5-4.5 1.5s-1.75-1.5-4.5-1.5a3 3 0 010-6h9a3 3 0 010 6z"/>
-                                </svg>
-                            </div>
+                            <!-- High-Tech Icon as the animated picture placeholder -->
+                            <svg class="w-32 h-32 md:w-56 md:h-56 text-emerald-500/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
                         </div>
                     </div>
                 </section>
 
-                <!-- LATEST PROJECTS SECTION -->
-                <section id="projects" class="container mx-auto px-4 py-12">
-                    <div class="flex justify-between items-center mb-8">
-                        <h2 class="text-4xl font-extrabold text-gray-900 border-b-4 border-emerald-500 pb-2">
-                            Latest Projects (${filteredProjects.length})
+                <!-- PROJECTS GRID SECTION -->
+                <section id="projects" class="container mx-auto px-4 py-16">
+                    <div class="flex justify-between items-center mb-10">
+                        <h2 class="text-4xl font-extrabold text-gray-900 border-b-4 border-rose-500 pb-2">
+                            Latest Demos (${filteredProjects.length})
                         </h2>
                     </div>
 
@@ -428,55 +463,28 @@
                             ${filteredProjects.map(generateProjectCard).join('')}
                         </div>
                     ` : `
-                        <div class="text-center p-10 bg-white rounded-xl shadow-lg border border-gray-200">
+                        <div class="text-center p-12 bg-white rounded-xl shadow-lg border border-gray-200">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No projects found</h3>
-                            <p class="mt-1 text-sm text-gray-500">
-                                Try adjusting your search term or be the first to <a href="#" onclick="window.currentState.view='upload'; window.renderApp();" class="text-emerald-600 font-semibold hover:text-emerald-500">upload a project</a>!
+                            <h3 class="mt-2 text-xl font-medium text-gray-900">No projects found</h3>
+                            <p class="mt-1 text-gray-500">
+                                Try a different search term or be the first to <a href="#" onclick="window.currentState.view='upload'; window.renderApp();" class="text-emerald-600 font-semibold hover:text-emerald-500 transition duration-200">upload a project</a>!
                             </p>
                         </div>
                     `}
                 </section>
-
-                <!-- Mid-Page CTA (Green/Dark Theme) -->
-                <section class="bg-gray-800 p-12 my-10">
+                
+                <!-- Secondary CTA Section (Green/Blue Accent) -->
+                <section class="bg-gradient-to-r from-emerald-700 to-emerald-800 p-12 my-10 shadow-inner">
                     <div class="container mx-auto text-center">
                         <h2 class="text-4xl font-extrabold text-white mb-4">
-                            Need a Custom Solution?
+                            Ready to Build Your Vision?
                         </h2>
                         <p class="text-xl text-emerald-200 mb-8">
-                            Our team at ELIJUL GROUPS LTD offers professional web and software development services tailored to your needs.
+                            ELIJUL GROUPS LTD provides end-to-end web and software development services. Let's discuss your custom project.
                         </p>
-                        <a href="https://www.gloex.org" target="_blank" class="green-button bg-emerald-500 text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300 shadow-xl transition duration-300">
-                            GET A FREE CONSULTATION
+                        <a href="https://www.gloex.org" target="_blank" class="green-button bg-white text-emerald-800 font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-100 focus:ring-4 focus:ring-white shadow-xl transition duration-300">
+                            REQUEST A CONSULTATION
                         </a>
-                    </div>
-                </section>
-
-                <!-- FEATURES SECTION (Blue/Pink Accent) -->
-                <section class="container mx-auto px-4 py-12">
-                    <h2 class="text-4xl font-extrabold text-center text-gray-900 border-b-4 border-rose-500 pb-2 mb-12">
-                        Why Choose gloEx Hub?
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <!-- Feature 1 -->
-                        <div class="bg-sky-50 p-6 rounded-xl shadow-lg border-t-4 border-sky-400 transform transition duration-300 hover:shadow-xl">
-                            <div class="text-4xl text-sky-600 mb-3">💡</div>
-                            <h3 class="text-2xl font-bold text-sky-900 mb-2">Visibility</h3>
-                            <p class="text-gray-700">Get your work in front of hundreds of potential collaborators and employers. Maximize your project's reach globally.</p>
-                        </div>
-                        <!-- Feature 2 -->
-                        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-400 transform transition duration-300 hover:shadow-xl">
-                            <div class="text-4xl text-emerald-600 mb-3">🛠️</div>
-                            <h3 class="text-2xl font-bold text-emerald-900 mb-2">Feedback Loop</h3>
-                            <p class="text-gray-700">Receive constructive, real-world feedback on your demos to iterate and improve your solutions faster than ever.</p>
-                        </div>
-                        <!-- Feature 3 -->
-                        <div class="bg-rose-50 p-6 rounded-xl shadow-lg border-t-4 border-rose-400 transform transition duration-300 hover:shadow-xl">
-                            <div class="text-4xl text-rose-600 mb-3">🤝</div>
-                            <h3 class="text-2xl font-bold text-rose-900 mb-2">Networking</h3>
-                            <p class="text-gray-700">Connect with ELIJUL GROUPS LTD for potential partnerships, jobs, and professional development opportunities.</p>
-                        </div>
                     </div>
                 </section>
             `;
@@ -487,7 +495,7 @@
             const project = window.currentState.projects.find(p => p.id === window.currentState.selectedProjectId);
             
             if (!project) {
-                // If project not found, redirect to dashboard
+                showMessage("Project not found.", 'error');
                 window.currentState.view = 'dashboard';
                 window.renderApp();
                 return;
@@ -496,52 +504,50 @@
             appContainer.innerHTML = `
                 <section class="container mx-auto px-4 py-12">
                     <!-- Back Button (Green Link) -->
-                    <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="inline-flex items-center text-emerald-700 hover:text-emerald-900 font-semibold mb-6 transition duration-300">
-                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        Back to Dashboard
+                    <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="inline-flex items-center text-emerald-700 hover:text-emerald-900 font-semibold mb-8 transition duration-300">
+                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Back to All Projects
                     </a>
 
                     <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-emerald-500">
                         <!-- Project Header -->
                         <h1 class="text-4xl font-extrabold text-gray-900 mb-2">${project.title}</h1>
-                        <p class="text-lg text-gray-500 mb-6">By: <span class="font-semibold text-emerald-600">${project.author}</span></p>
+                        <p class="text-lg text-gray-500 mb-6">Submitted by: <span class="font-semibold text-emerald-600">${project.author}</span></p>
 
                         <!-- Image and Details Grid -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <!-- Image/Media -->
-                            <div class="lg:col-span-2">
-                                <img src="${project.image}" alt="${project.title}" class="w-full h-auto rounded-lg shadow-xl mb-6" onerror="this.onerror=null; this.src='https://placehold.co/800x450/ccc/000?text=Project+Image'">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            <!-- Image/Media & Description -->
+                            <div class="lg:col-span-2 space-y-8">
+                                <img src="${project.image}" alt="${project.title}" class="w-full h-auto rounded-lg shadow-xl" onerror="this.onerror=null; this.src='https://placehold.co/800x450/ccc/000?text=Project+Image+Demo'">
                                 
-                                <h3 class="text-2xl font-bold text-gray-800 mb-3 border-b pb-2">Full Description</h3>
-                                <p class="text-gray-700 leading-relaxed">
-                                    ${project.description} 
-                                    <br><br>
-                                    This is a placeholder for a more detailed, multi-paragraph description. The project aims to solve complex problems using modern technology stacks and efficient architecture. It represents weeks of dedicated effort and problem-solving. Review the demo link for the live experience.
-                                </p>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-gray-800 mb-3 border-b pb-2">Project Overview</h3>
+                                    <p class="text-gray-700 leading-relaxed">${project.description}</p>
+                                </div>
                             </div>
                             
                             <!-- Sidebar (Metadata & CTAs) -->
                             <div class="lg:col-span-1 bg-gray-50 p-6 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Project Metadata</h3>
+                                <h3 class="text-xl font-bold text-gray-800 mb-5 border-b pb-2">Technical Details</h3>
 
-                                <div class="space-y-4 mb-6">
-                                    <p><span class="font-semibold text-gray-600">Views:</span> ${project.views || 0}</p>
-                                    <p><span class="font-semibold text-gray-600">Submission Date:</span> ${new Date().toLocaleDateString()}</p>
+                                <div class="space-y-4 mb-8">
+                                    <p><span class="font-semibold text-gray-700">Views:</span> ${project.views || 0}</p>
+                                    <p><span class="font-semibold text-gray-700">Submission Date:</span> ${new Date().toLocaleDateString()}</p>
                                 </div>
                                 
-                                <h4 class="text-lg font-semibold text-gray-700 mb-3">Technologies Used:</h4>
+                                <h4 class="text-lg font-semibold text-gray-700 mb-3">Key Technologies:</h4>
                                 <div class="flex flex-wrap gap-2 mb-8">
-                                    ${project.tags.map(tag => `<span class="text-sm font-semibold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">${tag}</span>`).join('')}
+                                    ${(project.tags || []).map(tag => `<span class="text-sm font-semibold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">${tag}</span>`).join('')}
                                 </div>
 
                                 <!-- Action Buttons (Green) -->
                                 <div class="space-y-4">
-                                    <a href="${project.demoUrl}" target="_blank" class="green-button block w-full text-center bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300">
+                                    <a href="${project.demoUrl}" target="_blank" class="green-button block w-full text-center hover:ring-2 hover:ring-offset-2 hover:ring-emerald-500">
                                         <svg class="w-5 h-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                         Visit Live Demo
                                     </a>
-                                    <button onclick="window.currentState.view='upload'; window.renderApp();" class="green-button block w-full text-center bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-300">
-                                        Ask Author a Question
+                                    <button onclick="window.currentState.view='upload'; window.renderApp();" class="green-button block w-full text-center bg-gray-200 text-gray-800 hover:bg-gray-300">
+                                        Contact Author
                                     </button>
                                 </div>
                             </div>
@@ -551,7 +557,7 @@
             `;
         };
 
-        // 3. Upload View (Form for submission)
+        // 3. Upload View (Form for submission - working feature)
         const renderUpload = () => {
             const handleSubmit = (event) => {
                 event.preventDefault();
@@ -562,18 +568,17 @@
                     demoUrl: formData.get('demoUrl'),
                     image: formData.get('imageUrl') || 'https://placehold.co/400x250/ccc/000?text=Pending+Image',
                     tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-                    author: 'Anonymous Contributor' // Will be overwritten by Firebase user data
+                    author: userId // Use the actual user ID or a better placeholder
                 };
                 
-                // Submit to Firebase
                 window.submitNewProject(projectData);
             };
 
             appContainer.innerHTML = `
                 <section class="container mx-auto px-4 py-12">
                     <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl border-t-4 border-rose-500">
-                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Submit Your Project Demo</h2>
-                        <p class="text-center text-lg text-gray-600 mb-8">Share your work with the community and get feedback.</p>
+                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Submit Your Demo</h2>
+                        <p class="text-center text-lg text-gray-600 mb-8">Fill out the details below to share your project with the community.</p>
 
                         <form id="uploadForm" onsubmit="handleSubmit(event)" class="space-y-6">
                             
@@ -581,42 +586,42 @@
                             <div>
                                 <label for="title" class="block text-sm font-medium text-gray-700">Project Title</label>
                                 <input type="text" id="title" name="title" required placeholder="e.g., Ultra-Fast Python Backend API"
-                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
                             </div>
 
                             <!-- Description -->
                             <div>
-                                <label for="description" class="block text-sm font-medium text-gray-700">Detailed Description (Max 300 words)</label>
-                                <textarea id="description" name="description" rows="5" required placeholder="Provide a detailed explanation of your project, its technology stack, and features."
-                                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+                                <label for="description" class="block text-sm font-medium text-gray-700">Detailed Description</label>
+                                <textarea id="description" name="description" rows="5" required placeholder="Provide a detailed explanation of your project, its features, and the technology stack used."
+                                          class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500"></textarea>
                             </div>
 
                             <!-- Demo URL -->
                             <div>
-                                <label for="demoUrl" class="block text-sm font-medium text-gray-700">Live Demo or Repository URL</label>
+                                <label for="demoUrl" class="block text-sm font-medium text-gray-700">Live Demo or Repository URL (MUST be a valid URL)</label>
                                 <input type="url" id="demoUrl" name="demoUrl" required placeholder="https://github.com/your-project"
-                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
                             </div>
 
                             <!-- Image URL -->
                             <div>
-                                <label for="imageUrl" class="block text-sm font-medium text-gray-700">Project Image URL (Optional)</label>
+                                <label for="imageUrl" class="block text-sm font-medium text-gray-700">Project Image URL (Optional, for better showcase)</label>
                                 <input type="url" id="imageUrl" name="imageUrl" placeholder="https://i.imgur.com/project-screenshot.png"
-                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
                             </div>
 
                              <!-- Tags -->
                             <div>
-                                <label for="tags" class="block text-sm font-medium text-gray-700">Tags (Comma separated)</label>
-                                <input type="text" id="tags" name="tags" required placeholder="e.g., React, Tailwind, NextJS, Python"
-                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                                <label for="tags" class="block text-sm font-medium text-gray-700">Tags (Comma separated, e.g., React, Tailwind, Python)</label>
+                                <input type="text" id="tags" name="tags" required placeholder="WebDev, AI, DataViz"
+                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
                             </div>
 
                             <!-- Submission Button (Green) -->
                             <button type="submit" 
-                                    class="green-button w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300">
+                                    class="green-button w-full flex justify-center py-3 px-4 rounded-lg shadow-xl text-lg font-bold hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300 transition duration-300">
                                 <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                                Submit Project
+                                Submit Demo for Review
                             </button>
                         </form>
                     </div>
@@ -626,23 +631,23 @@
             document.getElementById('uploadForm').onsubmit = handleSubmit;
         };
 
-        // --- Main Application Renderer ---
+        // --- Main Application Renderer (Core Feature) ---
         window.renderApp = () => {
-            // Show loading spinner if auth is not ready and we are fetching data
-            if (!window.currentState.isAuthReady && window.currentState.projects.length === 0) {
+            // Show loading spinner while Firebase is connecting
+            if (!window.currentState.isAuthReady) {
                  appContainer.innerHTML = `
                     <div class="flex flex-col items-center justify-center min-h-[50vh] text-emerald-600">
                         <svg class="animate-spin h-10 w-10 text-emerald-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <p class="text-lg font-semibold">Loading Application Data...</p>
+                        <p class="text-lg font-semibold">Connecting to Data Hub...</p>
                     </div>
                  `;
                  return;
             }
 
-            // Route to the correct view
+            // Route to the correct view (working feature)
             switch (window.currentState.view) {
                 case 'dashboard':
                     renderDashboard();
@@ -661,12 +666,8 @@
             }
         };
 
-        // Initial render after setup
-        window.onload = () => {
-             // If firebase init is slow, this ensures the first render happens as soon as the DOM is ready
-             // but the content won't be dynamic until isAuthReady is true.
-             window.renderApp();
-        };
+        // Initial render when the page loads
+        document.addEventListener('DOMContentLoaded', window.renderApp);
     </script>
 
 </body>
