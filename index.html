@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>gloEx Project Hub - Innovation Showcase</title>
+    <title>gloEx Hub - Projects, Services & About Us</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Set Inter Font as default -->
@@ -16,12 +16,10 @@
         import { getFirestore, doc, collection, query, onSnapshot, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // --- Global Firebase and Application Variables ---
-        // These variables are provided by the canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
-        // Set Firebase logging level
         setLogLevel('error'); 
         
         let app = null;
@@ -29,10 +27,9 @@
         let auth = null;
         let userId = null;
 
-        // --- Application State Management (Central Feature) ---
-        // This object controls the current view and data displayed.
+        // --- Application State Management (Updated Views) ---
         window.currentState = {
-            view: 'dashboard', // 'dashboard', 'project-details', 'upload'
+            view: 'dashboard', // 'dashboard', 'project-details', 'upload', 'ourservices', 'aboutus'
             selectedProjectId: null,
             projects: [],
             isAuthReady: false,
@@ -61,7 +58,8 @@
                     userId = user?.uid || crypto.randomUUID();
                     window.currentState.isAuthReady = true;
                     console.log("Firebase Auth Ready. User ID:", userId);
-                    startProjectListener(); // Start listening for data once authenticated
+                    startProjectListener();
+                    window.renderApp(); // Initial render after auth
                 });
 
             } catch (error) {
@@ -70,9 +68,8 @@
             }
         };
 
-        // --- Firestore Data Management (The working feature) ---
+        // --- Firestore Data Management ---
         const getProjectsCollectionRef = () => {
-            // Using public data storage for a shared project showcase
             return collection(db, `artifacts/${appId}/public/data/projects`);
         };
 
@@ -86,17 +83,15 @@
                 snapshot.forEach((doc) => {
                     projects.push({ id: doc.id, ...doc.data() });
                 });
-                // Sort by creation time (descending) in memory
                 projects.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 
-                // If the database is empty, fall back to mock data
                 if (projects.length === 0) {
                      window.currentState.projects = mockProjects;
                 } else {
                      window.currentState.projects = projects;
                 }
                 
-                window.renderApp(); // Re-render the app on data change
+                window.renderApp();
              }, (error) => {
                  console.error("Error listening to projects:", error);
              });
@@ -128,7 +123,7 @@
     </script>
     
     <style>
-        /* Base Styles and Green Theme */
+        /* Base Styles and Emerald Green Theme */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f7f7f7; 
@@ -148,11 +143,26 @@
 
         .green-button:hover {
             background-color: #047857; /* Emerald 700 */
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 10px -3px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Outline Button (More Real CTA) */
+        .outline-button {
+            border: 2px solid #059669;
+            color: #059669;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        /* Custom Wave Animation for Hero Section (Animated Picture) */
+        .outline-button:hover {
+            background-color: #ecfdf5; /* Emerald 50 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom Wave Animation for Hero Section */
         .wave-animation {
             position: relative;
             overflow: hidden;
@@ -190,16 +200,18 @@
             -webkit-line-clamp: 3;
         }
 
-        /* Custom Scrollbar for better UX */
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* Responsive Navbar link hover effect */
+        .nav-link {
+            transition: color 0.2s, background-color 0.2s;
         }
-        ::-webkit-scrollbar-thumb {
-            background-color: #059669; /* Green */
-            border-radius: 4px;
+        .nav-link:hover {
+            color: #047857;
+            background-color: #d1fae5;
         }
-        ::-webkit-scrollbar-track {
-            background-color: #e5e7eb;
+        .nav-link.active {
+            color: #047857;
+            border-bottom: 2px solid #047857;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -208,41 +220,34 @@
     <!-- Message Box Placeholder -->
     <div id="messageBox" class="fixed top-4 right-4 z-50 transition-opacity duration-300"></div>
 
-    <!-- HEADER (Green) -->
-    <header class="bg-emerald-600 shadow-2xl p-4 sticky top-0 z-20">
-        <div class="container mx-auto flex flex-wrap justify-between items-center gap-4">
-            <!-- Logo (Well Positioned and Animated) -->
-            <h1 class="text-3xl font-extrabold text-white tracking-wider animate-pulse">
-                <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="appTitle" class="transition duration-300 hover:text-emerald-200">
-                    <span class="text-emerald-300">G</span>loEx <span class="text-emerald-300">H</span>ub
+    <!-- HEADER (Green Focus) -->
+    <header class="bg-white shadow-lg p-4 sticky top-0 z-20">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Logo -->
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-wider">
+                <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="appTitle" class="transition duration-300 hover:text-emerald-600">
+                    <span class="text-emerald-600 animate-pulse">G</span>loEx <span class="text-sky-500">H</span>ub
                 </a>
             </h1>
             
-            <!-- Search Bar (Well Positioned) -->
-            <div class="flex-grow max-w-xl">
-                <div class="relative">
-                    <input 
-                        type="search" 
-                        placeholder="Search projects, authors, or tags..." 
-                        id="searchInput"
-                        oninput="window.currentState.searchText = this.value; window.renderApp();"
-                        class="w-full py-2 pl-10 pr-4 rounded-full border-2 border-emerald-400 focus:outline-none focus:border-white text-gray-800 bg-white shadow-inner transition duration-300"
-                    >
-                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Navigation Buttons (Green) -->
-            <nav class="flex space-x-3">
-                <button 
-                    onclick="window.currentState.view='upload'; window.renderApp();" 
-                    class="green-button text-sm md:text-base px-4 py-2 hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-300 shadow-lg whitespace-nowrap">
+            <!-- Main Navigation Links -->
+            <nav class="flex flex-wrap justify-center space-x-2 sm:space-x-4 text-gray-600 font-medium">
+                <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="nav-dashboard"
+                   class="nav-link p-2 rounded-lg text-sm md:text-base">
+                    Project Hubs
+                </a>
+                <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" id="nav-services"
+                   class="nav-link p-2 rounded-lg text-sm md:text-base">
+                    Our Services
+                </a>
+                <a href="#" onclick="window.currentState.view='aboutus'; window.renderApp(); return false;" id="nav-about"
+                   class="nav-link p-2 rounded-lg text-sm md:text-base">
+                    About Us
+                </a>
+                <a href="#" onclick="window.currentState.view='upload'; window.renderApp(); return false;" id="nav-upload"
+                   class="green-button text-sm px-3 py-2 hover:bg-emerald-700 shadow-md transition duration-300">
                     Upload Demo
-                </button>
-                <a href="https://www.gloex.org" target="_blank" class="green-button bg-transparent border-2 border-white text-white text-sm md:text-base px-4 py-2 hover:bg-white hover:text-emerald-700 focus:ring-4 focus:ring-emerald-300 transition duration-300 shadow-lg">
-                    Main Site
                 </a>
             </nav>
         </div>
@@ -251,12 +256,12 @@
     <!-- MAIN CONTENT CONTAINER -->
     <main id="appContainer" class="flex-grow"></main>
 
-    <!-- FOOTER (Green) -->
+    <!-- FOOTER (Replicating Content from index2.html) -->
     <footer class="bg-emerald-800 text-white p-8 mt-auto shadow-inner">
-        <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="container mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             
-            <!-- Section 1: Contact Info (Reused from original snippet) -->
-            <div class="contact-info">
+            <!-- Section 1: Contact Info (from index2.html) -->
+            <div>
                 <h3 class="text-xl font-bold mb-3 text-emerald-200">Ready to Start Your Project?</h3>
                 <p class="text-sm mb-4">Contact the ELIJUL GROUPS LTD team today.</p>
                 
@@ -275,73 +280,77 @@
                 <p class="mb-1 text-sm">
                     <span class="font-semibold text-emerald-300">Phone/WhatsApp:</span> +250 788 660 513
                 </p>
-                <p class="mt-4 text-sm opacity-80">
-                    Address: Kigali, Rwanda
-                </p>
             </div>
 
-            <!-- Section 2: Quick Links (Green) -->
+            <!-- Section 2: Quick Links -->
             <div>
                 <h3 class="text-xl font-bold mb-3 text-emerald-200">Quick Links</h3>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">Project Dashboard</a></li>
-                    <li><a href="https://www.gloex.org/about" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">About Us</a></li>
-                    <li><a href="https://www.gloex.org/services" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Our Services</a></li>
-                    <li><a href="#" class="text-emerald-100 hover:text-white transition duration-200">Privacy Policy</a></li>
+                    <li><a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">Project Hubs</a></li>
+                    <li><a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">Our Services</a></li>
+                    <li><a href="#" onclick="window.currentState.view='aboutus'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">About ELIJUL GROUPS</a></li>
+                    <li><a href="https://www.gloex.org/privacy" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Privacy Policy</a></li>
                 </ul>
             </div>
 
-            <!-- Section 3: Project Links -->
+            <!-- Section 3: Free Project Links (More attractive, real CTAs) -->
             <div>
-                <h3 class="text-xl font-bold mb-3 text-emerald-200">Get Free Projects</h3>
+                <h3 class="text-xl font-bold mb-3 text-emerald-200">Free Project Resources</h3>
                 <ul class="space-y-2 text-sm">
-                    <!-- Replicating the "DOWNLOAD FREE PROJECTS" links -->
-                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Web Development Demos</a></li>
-                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Data Science Templates</a></li>
-                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Mobile App Snippets</a></li>
-                    <li><a href="https://github.com/" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Open Source Utilities</a></li>
+                    <!-- Replicating the "DOWNLOAD FREE PROJECTS" links with professional formatting -->
+                    <li>
+                        <a href="https://github.com/gloex-web-demos" target="_blank" class="inline-flex items-center text-emerald-100 hover:text-white transition duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20a10 10 0 110-20 10 10 0 010 20zm0-16v12m0 0l-4-4m4 4l4-4"/></svg>
+                            Explore Web Demos (GitHub)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/gloex-data-templates" target="_blank" class="inline-flex items-center text-emerald-100 hover:text-white transition duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                            Data & ML Templates
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="window.currentState.view='upload'; window.renderApp(); return false;" class="inline-flex items-center text-emerald-100 hover:text-white transition duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Submit Your Open Project
+                        </a>
+                    </li>
                 </ul>
             </div>
 
-            <!-- Section 4: Call to Action (More Attractive CTA) -->
+            <!-- Section 4: Call to Action -->
              <div class="text-center md:text-left">
-                <h3 class="text-xl font-bold mb-3 text-emerald-200">Join the Community</h3>
-                <p class="mb-4 text-sm">Share your innovation and connect with global developers.</p>
-                <button 
-                    onclick="window.currentState.view='upload'; window.renderApp();" 
-                    class="green-button font-bold py-3 px-6 rounded-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300 w-full md:w-auto transition duration-300">
-                    START SHARING NOW
-                </button>
+                <h3 class="text-xl font-bold mb-3 text-emerald-200">Start a Custom Project</h3>
+                <p class="mb-4 text-sm">Need a unique solution? Request a consultation for full-stack development.</p>
+                <a href="mailto:info@gloex.org" class="green-button font-bold py-3 px-6 rounded-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300 w-full md:w-auto transition duration-300 shadow-xl">
+                    EMAIL US NOW
+                </a>
             </div>
         </div>
 
-        <!-- Copyright (Reused Footer Logo Text) -->
+        <!-- Copyright (from index2.html) -->
         <div class="mt-8 pt-4 border-t border-emerald-700 text-center text-sm opacity-75">
-            <p> &copy; 2025 ELIJUL GROUPS LTD. TWUBAKA-UBUMENYI. All rights reserved.</p>
+            <p class="footer-address">Address: Kigali, Rwanda</p>
+            <p class="footer-logo font-bold mt-1">TWUBAKA-UBUMENYI. &copy; 2025 ELIJUL GROUPS LTD. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC (Continued) -->
     <script>
-        // Placeholder Project Data (Used if Firestore data is empty or unavailable)
+        // Placeholder Project Data 
         const mockProjects = [
             { id: 'p1', title: 'AI-Powered Stock Predictor', description: 'A Python-based machine learning model using LSTM networks to forecast stock market trends. Includes a web interface for real-time data.', image: 'https://placehold.co/400x250/0ea5e9/ffffff?text=AI+Model', tags: ['AI', 'Python', 'Finance'], author: 'Jane Doe', views: 1200, demoUrl: 'https://github.com/gloex-ai-finance' },
             { id: 'p2', title: 'Modern React E-commerce UI', description: 'A sleek, responsive e-commerce front-end built with React and Tailwind CSS, focusing on mobile-first design and accessibility. Integrates dummy payment API.', image: 'https://placehold.co/400x250/ec4899/ffffff?text=React+UI', tags: ['React', 'WebDev', 'Frontend'], author: 'John Smith', views: 850, demoUrl: 'https://github.com/gloex-react-shop' },
             { id: 'p3', title: 'Open Source IoT Dashboard', description: 'Real-time data visualization dashboard for home automation sensors using Node.js and D3.js. Easily extendable architecture for new sensors.', image: 'https://placehold.co/400x250/22c55e/000000?text=IoT+Dashboard', tags: ['IoT', 'Node.js', 'DataViz'], author: 'Alice Brown', views: 420, demoUrl: 'https://github.com/gloex-iot-dash' },
         ];
         
-        // Use mock data until Firebase connects
         if (window.currentState.projects.length === 0) {
             window.currentState.projects = mockProjects;
         }
 
         const appContainer = document.getElementById('appContainer');
 
-        /**
-         * Custom message box function (replaces alert())
-         * @param {string} message 
-         * @param {string} type 'success' or 'error'
-         */
         function showMessage(message, type) {
             const box = document.getElementById('messageBox');
             const colorClass = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
@@ -361,15 +370,13 @@
                 setTimeout(() => box.innerHTML = '', 300);
             }, 3000);
         }
-
-
+        
         // --- View Rendering Functions ---
 
-        // 1. Dashboard View
+        // 1. Dashboard View (Project Hubs)
         const renderDashboard = () => {
             const { projects, searchText } = window.currentState;
 
-            // Filter logic (working feature)
             const filteredProjects = projects.filter(p => 
                 (p.title || '').toLowerCase().includes(searchText.toLowerCase()) || 
                 (p.description || '').toLowerCase().includes(searchText.toLowerCase()) ||
@@ -377,7 +384,6 @@
                 (p.tags || []).some(tag => tag.toLowerCase().includes(searchText.toLowerCase()))
             );
 
-            // Generate a single project card (Attractive Cards)
             const generateProjectCard = (project) => {
                 const isBlue = project.id.charCodeAt(project.id.length - 1) % 2 === 0;
                 const bgColor = isBlue ? 'bg-sky-50' : 'bg-rose-50';
@@ -401,7 +407,7 @@
                                 <a href="${project.demoUrl}" target="_blank" onclick="event.stopPropagation();" 
                                    class="green-button inline-flex items-center justify-center text-sm w-full transition duration-300 hover:ring-2 hover:ring-offset-2 hover:ring-emerald-500">
                                     <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                    View Demo
+                                    View Live Demo
                                 </a>
                             </div>
                         </div>
@@ -410,6 +416,25 @@
             };
 
             appContainer.innerHTML = `
+                <!-- SEARCH BAR (Moved into dashboard view content) -->
+                <div class="container mx-auto px-4 pt-8 pb-4">
+                    <div class="flex justify-center max-w-2xl mx-auto">
+                        <div class="relative w-full">
+                            <input 
+                                type="search" 
+                                placeholder="Search project hubs..." 
+                                id="searchInput"
+                                value="${searchText}"
+                                oninput="window.currentState.searchText = this.value; window.renderApp();"
+                                class="w-full py-3 pl-12 pr-4 rounded-full border-2 border-emerald-400 focus:outline-none focus:border-emerald-600 text-gray-800 bg-white shadow-xl transition duration-300 text-lg"
+                            >
+                            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- HERO SECTION (Blue/Pink Section & Animated Picture) -->
                 <section class="bg-gradient-to-br from-sky-50 to-rose-50 p-8 md:p-16 relative overflow-hidden">
                     <div class="wave-animation absolute inset-0">
@@ -421,28 +446,27 @@
                         <!-- Hero Text and CTA -->
                         <div class="md:w-1/2 text-center md:text-left">
                             <h2 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
-                                <span class="text-emerald-600">Accelerate</span> Your Innovation Pipeline.
+                                <span class="text-emerald-600">Discover</span> Cutting-Edge Demos.
                             </h2>
                             <p class="text-xl text-gray-700 mb-8">
                                 The gloEx Hub is a curated showcase for working demos—where brilliant code meets opportunity.
                             </p>
                             
-                            <!-- Attractive Call to Actions (Green) -->
+                            <!-- Attractive Call to Actions (More real CTAs) -->
                             <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                                 <button 
                                     onclick="window.currentState.view='upload'; window.renderApp();" 
                                     class="green-button text-lg shadow-xl hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300">
                                     <span class="animate-pulse">SHARE YOUR PROJECT</span>
                                 </button>
-                                <a href="#projects" class="green-button bg-transparent border-2 border-emerald-600 text-emerald-800 font-bold hover:bg-emerald-600 hover:text-white transition duration-300 shadow-lg">
-                                    BROWSE LATEST
+                                <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" class="outline-button font-bold">
+                                    HIRE A DEVELOPER
                                 </a>
                             </div>
                         </div>
 
-                        <!-- Animated Picture (Well Positioned) -->
+                        <!-- Animated Picture Placeholder -->
                         <div class="md:w-1/2 h-64 md:h-96 relative flex items-center justify-center">
-                            <!-- High-Tech Icon as the animated picture placeholder -->
                             <svg class="w-32 h-32 md:w-56 md:h-56 text-emerald-500/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
@@ -454,7 +478,7 @@
                 <section id="projects" class="container mx-auto px-4 py-16">
                     <div class="flex justify-between items-center mb-10">
                         <h2 class="text-4xl font-extrabold text-gray-900 border-b-4 border-rose-500 pb-2">
-                            Latest Demos (${filteredProjects.length})
+                            Project Hubs (${filteredProjects.length})
                         </h2>
                     </div>
 
@@ -472,25 +496,10 @@
                         </div>
                     `}
                 </section>
-                
-                <!-- Secondary CTA Section (Green/Blue Accent) -->
-                <section class="bg-gradient-to-r from-emerald-700 to-emerald-800 p-12 my-10 shadow-inner">
-                    <div class="container mx-auto text-center">
-                        <h2 class="text-4xl font-extrabold text-white mb-4">
-                            Ready to Build Your Vision?
-                        </h2>
-                        <p class="text-xl text-emerald-200 mb-8">
-                            ELIJUL GROUPS LTD provides end-to-end web and software development services. Let's discuss your custom project.
-                        </p>
-                        <a href="https://www.gloex.org" target="_blank" class="green-button bg-white text-emerald-800 font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-100 focus:ring-4 focus:ring-white shadow-xl transition duration-300">
-                            REQUEST A CONSULTATION
-                        </a>
-                    </div>
-                </section>
             `;
         };
 
-        // 2. Project Details View
+        // 2. Project Details View (Kept for completeness)
         const renderProjectDetails = () => {
             const project = window.currentState.projects.find(p => p.id === window.currentState.selectedProjectId);
             
@@ -503,20 +512,16 @@
 
             appContainer.innerHTML = `
                 <section class="container mx-auto px-4 py-12">
-                    <!-- Back Button (Green Link) -->
                     <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="inline-flex items-center text-emerald-700 hover:text-emerald-900 font-semibold mb-8 transition duration-300">
                         <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        Back to All Projects
+                        Back to Project Hubs
                     </a>
 
                     <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-emerald-500">
-                        <!-- Project Header -->
                         <h1 class="text-4xl font-extrabold text-gray-900 mb-2">${project.title}</h1>
                         <p class="text-lg text-gray-500 mb-6">Submitted by: <span class="font-semibold text-emerald-600">${project.author}</span></p>
 
-                        <!-- Image and Details Grid -->
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                            <!-- Image/Media & Description -->
                             <div class="lg:col-span-2 space-y-8">
                                 <img src="${project.image}" alt="${project.title}" class="w-full h-auto rounded-lg shadow-xl" onerror="this.onerror=null; this.src='https://placehold.co/800x450/ccc/000?text=Project+Image+Demo'">
                                 
@@ -526,7 +531,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Sidebar (Metadata & CTAs) -->
                             <div class="lg:col-span-1 bg-gray-50 p-6 rounded-lg shadow-inner">
                                 <h3 class="text-xl font-bold text-gray-800 mb-5 border-b pb-2">Technical Details</h3>
 
@@ -540,15 +544,14 @@
                                     ${(project.tags || []).map(tag => `<span class="text-sm font-semibold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">${tag}</span>`).join('')}
                                 </div>
 
-                                <!-- Action Buttons (Green) -->
                                 <div class="space-y-4">
                                     <a href="${project.demoUrl}" target="_blank" class="green-button block w-full text-center hover:ring-2 hover:ring-offset-2 hover:ring-emerald-500">
                                         <svg class="w-5 h-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                         Visit Live Demo
                                     </a>
-                                    <button onclick="window.currentState.view='upload'; window.renderApp();" class="green-button block w-full text-center bg-gray-200 text-gray-800 hover:bg-gray-300">
-                                        Contact Author
-                                    </button>
+                                    <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" class="outline-button block w-full text-center">
+                                        Partner with Author
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -557,7 +560,7 @@
             `;
         };
 
-        // 3. Upload View (Form for submission - working feature)
+        // 3. Upload View
         const renderUpload = () => {
             const handleSubmit = (event) => {
                 event.preventDefault();
@@ -568,7 +571,7 @@
                     demoUrl: formData.get('demoUrl'),
                     image: formData.get('imageUrl') || 'https://placehold.co/400x250/ccc/000?text=Pending+Image',
                     tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-                    author: userId // Use the actual user ID or a better placeholder
+                    author: userId 
                 };
                 
                 window.submitNewProject(projectData);
@@ -577,8 +580,8 @@
             appContainer.innerHTML = `
                 <section class="container mx-auto px-4 py-12">
                     <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl border-t-4 border-rose-500">
-                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Submit Your Demo</h2>
-                        <p class="text-center text-lg text-gray-600 mb-8">Fill out the details below to share your project with the community.</p>
+                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Contribute to the Hub</h2>
+                        <p class="text-center text-lg text-gray-600 mb-8">Share your working demo to showcase your capabilities.</p>
 
                         <form id="uploadForm" onsubmit="handleSubmit(event)" class="space-y-6">
                             
@@ -592,32 +595,25 @@
                             <!-- Description -->
                             <div>
                                 <label for="description" class="block text-sm font-medium text-gray-700">Detailed Description</label>
-                                <textarea id="description" name="description" rows="5" required placeholder="Provide a detailed explanation of your project, its features, and the technology stack used."
+                                <textarea id="description" name="description" rows="5" required placeholder="Explain your project, its features, and the technology stack."
                                           class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500"></textarea>
                             </div>
 
                             <!-- Demo URL -->
                             <div>
-                                <label for="demoUrl" class="block text-sm font-medium text-gray-700">Live Demo or Repository URL (MUST be a valid URL)</label>
+                                <label for="demoUrl" class="block text-sm font-medium text-gray-700">Live Demo or Repository URL (e.g., GitHub)</label>
                                 <input type="url" id="demoUrl" name="demoUrl" required placeholder="https://github.com/your-project"
                                        class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
                             </div>
 
-                            <!-- Image URL -->
-                            <div>
-                                <label for="imageUrl" class="block text-sm font-medium text-gray-700">Project Image URL (Optional, for better showcase)</label>
-                                <input type="url" id="imageUrl" name="imageUrl" placeholder="https://i.imgur.com/project-screenshot.png"
-                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
-                            </div>
-
-                             <!-- Tags -->
+                            <!-- Tags -->
                             <div>
                                 <label for="tags" class="block text-sm font-medium text-gray-700">Tags (Comma separated, e.g., React, Tailwind, Python)</label>
-                                <input type="text" id="tags" name="tags" required placeholder="WebDev, AI, DataViz"
+                                <input type="text" id="tags" name="tags" required placeholder="WebDev, AI, DataViz, FinTech"
                                        class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
                             </div>
 
-                            <!-- Submission Button (Green) -->
+                            <!-- Submission Button -->
                             <button type="submit" 
                                     class="green-button w-full flex justify-center py-3 px-4 rounded-lg shadow-xl text-lg font-bold hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300 transition duration-300">
                                 <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -627,13 +623,116 @@
                     </div>
                 </section>
             `;
-            // Attach the submit handler after the form is rendered
             document.getElementById('uploadForm').onsubmit = handleSubmit;
         };
+        
+        // 4. Our Services View (New Page)
+        const renderOurServices = () => {
+             appContainer.innerHTML = `
+                <section class="container mx-auto px-4 py-16">
+                    <div class="max-w-4xl mx-auto">
+                        <h2 class="text-5xl font-extrabold text-gray-900 mb-4 text-center">Our Services: Building Digital Futures</h2>
+                        <p class="text-xl text-gray-600 mb-12 text-center">ELIJUL GROUPS LTD provides end-to-end solutions, specializing in bespoke software development and strategic consulting.</p>
 
+                        <!-- Service Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            
+                            <!-- Service 1: Custom Software Development -->
+                            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-500 hover:shadow-xl transition duration-300">
+                                <svg class="w-10 h-10 text-emerald-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Bespoke Development</h3>
+                                <p class="text-gray-600 mb-4">We design, develop, and deploy scalable and secure custom applications, from high-performance backends to intuitive user interfaces.</p>
+                                <a href="mailto:info@gloex.org?subject=Inquiry%20About%20Custom%20Development" class="outline-button text-sm inline-block">Start Project</a>
+                            </div>
+
+                            <!-- Service 2: Cloud & Infrastructure -->
+                            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-sky-500 hover:shadow-xl transition duration-300">
+                                <svg class="w-10 h-10 text-sky-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999L17 3C13.2 3 10 6.2 10 10.1"/></svg>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Cloud Infrastructure</h3>
+                                <p class="text-gray-600 mb-4">Specializing in deployment and management on modern cloud platforms (e.g., Firebase, AWS), ensuring reliability and optimal cost structure.</p>
+                                <a href="mailto:info@gloex.org?subject=Cloud%20Consultation%20Request" class="outline-button text-sm inline-block">Get Consulting</a>
+                            </div>
+
+                            <!-- Service 3: Product Strategy & UX/UI -->
+                            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-rose-500 hover:shadow-xl transition duration-300">
+                                <svg class="w-10 h-10 text-rose-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.674m-.944 4v-4.665M7.674 8.76l5.72 5.72M8.196 17.58L12 13.778l3.804 3.804M7.663 5h8.674L16 6.337v6.337L12 16.337 7.663 12.674V6.337L8.196 5z"/></svg>
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Product & Design</h3>
+                                <p class="text-gray-600 mb-4">From initial concept to final mockups, we guide your product strategy and deliver exceptional UX/UI design that converts users.</p>
+                                <a href="mailto:info@gloex.org?subject=Design%20and%20Strategy%20Inquiry" class="outline-button text-sm inline-block">View Portfolio</a>
+                            </div>
+                        </div>
+
+                        <!-- CTA Section -->
+                        <div class="mt-16 text-center bg-emerald-50 p-10 rounded-xl shadow-inner border border-emerald-200">
+                            <h3 class="text-3xl font-extrabold text-gray-900 mb-4">Ready to Build with Us?</h3>
+                            <p class="text-lg text-gray-700 mb-6">Discuss your project requirements with our technical team today.</p>
+                            <a href="mailto:info@gloex.org" class="green-button text-lg font-bold py-3 px-8 shadow-xl hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300">
+                                REQUEST A FREE QUOTE
+                            </a>
+                        </div>
+                    </div>
+                </section>
+             `;
+        };
+
+        // 5. About Us View (New Page)
+        const renderAboutUs = () => {
+             appContainer.innerHTML = `
+                <section class="container mx-auto px-4 py-16">
+                    <div class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-xl shadow-2xl border-t-4 border-sky-500">
+                        <h2 class="text-5xl font-extrabold text-gray-900 mb-4 text-center">About ELIJUL GROUPS LTD</h2>
+                        <h3 class="text-xl text-emerald-600 mb-10 text-center font-semibold border-b pb-4">Our Motto: TWUBAKA-UBUMENYI (We Build Knowledge)</h3>
+
+                        <!-- Mission Section -->
+                        <div class="mb-12">
+                            <h4 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                                <svg class="w-8 h-8 mr-3 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                Our Vision and Mission
+                            </h4>
+                            <p class="text-lg text-gray-700 leading-relaxed">
+                                Founded in **Kigali, Rwanda**, ELIJUL GROUPS LTD is committed to leveraging technology to build capacity and drive innovation across Africa and the world. We believe that by building powerful, accessible software, we empower businesses and communities to achieve their full potential. The **gloEx Hub** is a direct reflection of this mission, serving as a platform for open source development and collaborative learning.
+                            </p>
+                        </div>
+                        
+                        <!-- Values Section -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+                            <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold text-xl text-emerald-600">Innovation</h5>
+                                <p class="text-sm text-gray-600">Always adopting the latest technologies.</p>
+                            </div>
+                             <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold text-xl text-sky-600">Quality</h5>
+                                <p class="text-sm text-gray-600">Delivering highly secure and reliable code.</p>
+                            </div>
+                             <div class="text-center p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold text-xl text-rose-600">Collaboration</h5>
+                                <p class="text-sm text-gray-600">Working closely with partners and developers.</p>
+                            </div>
+                        </div>
+
+                        <!-- CTA -->
+                        <div class="text-center pt-8 border-t border-gray-200">
+                            <h4 class="text-2xl font-bold text-gray-800 mb-4">Connect with Our Team</h4>
+                            <p class="text-gray-700 mb-6">Reach out to us for partnerships or to learn more about our company culture.</p>
+                            <a href="mailto:info@gloex.org" class="green-button text-lg font-bold py-3 px-8 shadow-xl">
+                                CONTACT ELIJUL GROUPS
+                            </a>
+                        </div>
+                    </div>
+                </section>
+             `;
+        };
+        
         // --- Main Application Renderer (Core Feature) ---
         window.renderApp = () => {
-            // Show loading spinner while Firebase is connecting
+            // Update the active state in the navigation bar
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            const currentNavId = 'nav-' + (window.currentState.view === 'dashboard' ? 'dashboard' : window.currentState.view);
+            const activeLink = document.getElementById(currentNavId);
+            if(activeLink) {
+                activeLink.classList.add('active');
+            }
+
             if (!window.currentState.isAuthReady) {
                  appContainer.innerHTML = `
                     <div class="flex flex-col items-center justify-center min-h-[50vh] text-emerald-600">
@@ -647,7 +746,6 @@
                  return;
             }
 
-            // Route to the correct view (working feature)
             switch (window.currentState.view) {
                 case 'dashboard':
                     renderDashboard();
@@ -658,15 +756,19 @@
                 case 'upload':
                     renderUpload();
                     break;
+                case 'ourservices':
+                    renderOurServices();
+                    break;
+                case 'aboutus':
+                    renderAboutUs();
+                    break;
                 default:
-                    // Default to dashboard if state is invalid
                     window.currentState.view = 'dashboard';
                     renderDashboard();
                     break;
             }
         };
 
-        // Initial render when the page loads
         document.addEventListener('DOMContentLoaded', window.renderApp);
     </script>
 
