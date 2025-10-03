@@ -17,6 +17,7 @@
         
         // --- Global Firebase and Application Variables ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // Ensure config is parsed safely or set to null if undefined
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
@@ -27,11 +28,18 @@
         let auth = null;
         let userId = null;
 
-        // --- Application State Management (Updated Views) ---
+        // Placeholder Project Data (Used if Firebase is loading or unavailable)
+        const mockProjects = [
+            { id: 'p1', title: 'AI-Powered Stock Predictor', description: 'A Python-based machine learning model using LSTM networks to forecast stock market trends. Includes a web interface for real-time data.', image: 'https://placehold.co/400x250/0ea5e9/ffffff?text=AI+Model', tags: ['AI', 'Python', 'Finance'], author: 'Jane Doe', views: 1200, demoUrl: 'https://github.com/gloex-ai-finance' },
+            { id: 'p2', title: 'Modern React E-commerce UI', description: 'A sleek, responsive e-commerce front-end built with React and Tailwind CSS, focusing on mobile-first design and accessibility. Integrates dummy payment API.', image: 'https://placehold.co/400x250/ec4899/ffffff?text=React+UI', tags: ['React', 'WebDev', 'Frontend'], author: 'John Smith', views: 850, demoUrl: 'https://github.com/gloex-react-shop' },
+            { id: 'p3', title: 'Open Source IoT Dashboard', description: 'Real-time data visualization dashboard for home automation sensors using Node.js and D3.js. Easily extendable architecture for new sensors.', image: 'https://placehold.co/400x250/22c55e/000000?text=IoT+Dashboard', tags: ['IoT', 'Node.js', 'DataViz'], author: 'Alice Brown', views: 420, demoUrl: 'https://github.com/gloex-iot-dash' },
+        ];
+
+        // --- Application State Management ---
         window.currentState = {
             view: 'dashboard', // 'dashboard', 'project-details', 'upload', 'ourservices', 'aboutus'
             selectedProjectId: null,
-            projects: [],
+            projects: mockProjects, // Start with mock data immediately
             isAuthReady: false,
             searchText: ''
         };
@@ -39,8 +47,10 @@
         // --- Firebase Initialization and Authentication ---
         const initFirebase = async () => {
             if (!firebaseConfig) {
-                console.error("Firebase config is missing. Data persistence will be unavailable.");
-                window.currentState.isAuthReady = true;
+                console.warn("Firebase config is missing. App is running in mock data mode.");
+                // Set ready but don't attempt sign-in/listeners if no config
+                window.currentState.isAuthReady = true; 
+                window.renderApp(); 
                 return;
             }
             try {
@@ -59,12 +69,13 @@
                     window.currentState.isAuthReady = true;
                     console.log("Firebase Auth Ready. User ID:", userId);
                     startProjectListener();
-                    window.renderApp(); // Initial render after auth
+                    window.renderApp(); // Final render after real data is fetched
                 });
 
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                window.currentState.isAuthReady = true;
+                window.currentState.isAuthReady = true; // Still set ready to exit loading screen
+                window.renderApp();
             }
         };
 
@@ -85,9 +96,8 @@
                 });
                 projects.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 
-                if (projects.length === 0) {
-                     window.currentState.projects = mockProjects;
-                } else {
+                if (projects.length > 0) {
+                     // Replace mock data with real data if available
                      window.currentState.projects = projects;
                 }
                 
@@ -99,7 +109,7 @@
 
         window.submitNewProject = async (projectData) => {
             if (!db) { 
-                console.error("Database not initialized.");
+                console.error("Database not initialized. Cannot submit.");
                 showMessage("Submission failed: Database not ready.", 'error'); 
                 return; 
             }
@@ -164,9 +174,9 @@
 
         /* Custom Wave Animation for Hero Section */
         .wave-animation {
-            position: relative;
+            position: absolute;
+            inset: 0;
             overflow: hidden;
-            border-radius: 1rem;
         }
         .wave {
             position: absolute;
@@ -224,7 +234,7 @@
     <header class="bg-white shadow-lg p-4 sticky top-0 z-20">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             
-            <!-- Logo -->
+            <!-- Logo (Text-based with color accents - always works) -->
             <h1 class="text-3xl font-extrabold text-gray-900 tracking-wider">
                 <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="appTitle" class="transition duration-300 hover:text-emerald-600">
                     <span class="text-emerald-600 animate-pulse">G</span>loEx <span class="text-sky-500">H</span>ub
@@ -237,11 +247,11 @@
                    class="nav-link p-2 rounded-lg text-sm md:text-base">
                     Project Hubs
                 </a>
-                <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" id="nav-services"
+                <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" id="nav-ourservices"
                    class="nav-link p-2 rounded-lg text-sm md:text-base">
                     Our Services
                 </a>
-                <a href="#" onclick="window.currentState.view='aboutus'; window.renderApp(); return false;" id="nav-about"
+                <a href="#" onclick="window.currentState.view='aboutus'; window.renderApp(); return false;" id="nav-aboutus"
                    class="nav-link p-2 rounded-lg text-sm md:text-base">
                     About Us
                 </a>
@@ -256,11 +266,11 @@
     <!-- MAIN CONTENT CONTAINER -->
     <main id="appContainer" class="flex-grow"></main>
 
-    <!-- FOOTER (Replicating Content from index2.html) -->
+    <!-- FOOTER -->
     <footer class="bg-emerald-800 text-white p-8 mt-auto shadow-inner">
         <div class="container mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             
-            <!-- Section 1: Contact Info (from index2.html) -->
+            <!-- Section 1: Contact Info -->
             <div>
                 <h3 class="text-xl font-bold mb-3 text-emerald-200">Ready to Start Your Project?</h3>
                 <p class="text-sm mb-4">Contact the ELIJUL GROUPS LTD team today.</p>
@@ -293,11 +303,10 @@
                 </ul>
             </div>
 
-            <!-- Section 3: Free Project Links (More attractive, real CTAs) -->
+            <!-- Section 3: Free Project Resources -->
             <div>
                 <h3 class="text-xl font-bold mb-3 text-emerald-200">Free Project Resources</h3>
                 <ul class="space-y-2 text-sm">
-                    <!-- Replicating the "DOWNLOAD FREE PROJECTS" links with professional formatting -->
                     <li>
                         <a href="https://github.com/gloex-web-demos" target="_blank" class="inline-flex items-center text-emerald-100 hover:text-white transition duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20a10 10 0 110-20 10 10 0 010 20zm0-16v12m0 0l-4-4m4 4l4-4"/></svg>
@@ -329,7 +338,7 @@
             </div>
         </div>
 
-        <!-- Copyright (from index2.html) -->
+        <!-- Copyright -->
         <div class="mt-8 pt-4 border-t border-emerald-700 text-center text-sm opacity-75">
             <p class="footer-address">Address: Kigali, Rwanda</p>
             <p class="footer-logo font-bold mt-1">TWUBAKA-UBUMENYI. &copy; 2025 ELIJUL GROUPS LTD. All rights reserved.</p>
@@ -338,17 +347,7 @@
 
     <!-- JAVASCRIPT LOGIC (Continued) -->
     <script>
-        // Placeholder Project Data 
-        const mockProjects = [
-            { id: 'p1', title: 'AI-Powered Stock Predictor', description: 'A Python-based machine learning model using LSTM networks to forecast stock market trends. Includes a web interface for real-time data.', image: 'https://placehold.co/400x250/0ea5e9/ffffff?text=AI+Model', tags: ['AI', 'Python', 'Finance'], author: 'Jane Doe', views: 1200, demoUrl: 'https://github.com/gloex-ai-finance' },
-            { id: 'p2', title: 'Modern React E-commerce UI', description: 'A sleek, responsive e-commerce front-end built with React and Tailwind CSS, focusing on mobile-first design and accessibility. Integrates dummy payment API.', image: 'https://placehold.co/400x250/ec4899/ffffff?text=React+UI', tags: ['React', 'WebDev', 'Frontend'], author: 'John Smith', views: 850, demoUrl: 'https://github.com/gloex-react-shop' },
-            { id: 'p3', title: 'Open Source IoT Dashboard', description: 'Real-time data visualization dashboard for home automation sensors using Node.js and D3.js. Easily extendable architecture for new sensors.', image: 'https://placehold.co/400x250/22c55e/000000?text=IoT+Dashboard', tags: ['IoT', 'Node.js', 'DataViz'], author: 'Alice Brown', views: 420, demoUrl: 'https://github.com/gloex-iot-dash' },
-        ];
         
-        if (window.currentState.projects.length === 0) {
-            window.currentState.projects = mockProjects;
-        }
-
         const appContainer = document.getElementById('appContainer');
 
         function showMessage(message, type) {
@@ -377,7 +376,10 @@
         const renderDashboard = () => {
             const { projects, searchText } = window.currentState;
 
-            const filteredProjects = projects.filter(p => 
+            // Ensure projects is an array before filtering
+            const safeProjects = Array.isArray(projects) ? projects : [];
+
+            const filteredProjects = safeProjects.filter(p => 
                 (p.title || '').toLowerCase().includes(searchText.toLowerCase()) || 
                 (p.description || '').toLowerCase().includes(searchText.toLowerCase()) ||
                 (p.author || '').toLowerCase().includes(searchText.toLowerCase()) ||
@@ -416,7 +418,7 @@
             };
 
             appContainer.innerHTML = `
-                <!-- SEARCH BAR (Moved into dashboard view content) -->
+                <!-- SEARCH BAR -->
                 <div class="container mx-auto px-4 pt-8 pb-4">
                     <div class="flex justify-center max-w-2xl mx-auto">
                         <div class="relative w-full">
@@ -436,7 +438,7 @@
                 </div>
 
                 <!-- HERO SECTION (Blue/Pink Section & Animated Picture) -->
-                <section class="bg-gradient-to-br from-sky-50 to-rose-50 p-8 md:p-16 relative overflow-hidden">
+                <section class="bg-gradient-to-br from-sky-50 to-rose-50 p-8 md:p-16 relative overflow-hidden rounded-b-xl shadow-lg">
                     <div class="wave-animation absolute inset-0">
                         <div class="wave wave-1"></div>
                         <div class="wave wave-2"></div>
@@ -465,9 +467,9 @@
                             </div>
                         </div>
 
-                        <!-- Animated Picture Placeholder -->
+                        <!-- Animated Picture Placeholder (SVG) -->
                         <div class="md:w-1/2 h-64 md:h-96 relative flex items-center justify-center">
-                            <svg class="w-32 h-32 md:w-56 md:h-56 text-emerald-500/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <svg class="w-40 h-40 md:w-64 md:h-64 text-emerald-500/80 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
@@ -562,6 +564,7 @@
 
         // 3. Upload View
         const renderUpload = () => {
+            // Note: The handleSubmit logic is defined outside the function so it can be attached to the form correctly.
             const handleSubmit = (event) => {
                 event.preventDefault();
                 const formData = new FormData(event.target);
@@ -583,7 +586,7 @@
                         <h2 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Contribute to the Hub</h2>
                         <p class="text-center text-lg text-gray-600 mb-8">Share your working demo to showcase your capabilities.</p>
 
-                        <form id="uploadForm" onsubmit="handleSubmit(event)" class="space-y-6">
+                        <form id="uploadForm" class="space-y-6">
                             
                             <!-- Project Title -->
                             <div>
@@ -623,6 +626,7 @@
                     </div>
                 </section>
             `;
+            // Attach the handler here, after the form is in the DOM
             document.getElementById('uploadForm').onsubmit = handleSubmit;
         };
         
@@ -727,13 +731,22 @@
         window.renderApp = () => {
             // Update the active state in the navigation bar
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            const currentNavId = 'nav-' + (window.currentState.view === 'dashboard' ? 'dashboard' : window.currentState.view);
-            const activeLink = document.getElementById(currentNavId);
-            if(activeLink) {
+            // Use the correct IDs for navigation links
+            const viewMap = {
+                'dashboard': 'nav-dashboard',
+                'ourservices': 'nav-ourservices',
+                'aboutus': 'nav-aboutus',
+                'upload': 'nav-upload' // Upload is a button, but we'll highlight it if active
+            };
+            const activeNavId = viewMap[window.currentState.view];
+            const activeLink = document.getElementById(activeNavId);
+            if(activeLink && window.currentState.view !== 'upload') {
                 activeLink.classList.add('active');
             }
 
-            if (!window.currentState.isAuthReady) {
+
+            // Show a basic loading screen if auth is not ready yet
+            if (!window.currentState.isAuthReady && window.currentState.projects.length === 0) {
                  appContainer.innerHTML = `
                     <div class="flex flex-col items-center justify-center min-h-[50vh] text-emerald-600">
                         <svg class="animate-spin h-10 w-10 text-emerald-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -746,6 +759,7 @@
                  return;
             }
 
+            // Render the specific view
             switch (window.currentState.view) {
                 case 'dashboard':
                     renderDashboard();
@@ -769,7 +783,9 @@
             }
         };
 
-        document.addEventListener('DOMContentLoaded', window.renderApp);
+        // CRITICAL FIX: Call renderApp() immediately to show content, even if Firebase is still connecting.
+        // We removed the DOMContentLoaded listener and call it directly.
+        window.renderApp(); 
     </script>
 
 </body>
