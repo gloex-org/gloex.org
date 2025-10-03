@@ -3,417 +3,671 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>gloEx Hub | GLOEX.ORG - Digital Solutions</title>
+    <title>gloEx Project Hub - Innovation Showcase</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Load Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, query, onSnapshot, addDoc, serverTimestamp, setLogLevel, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // --- Global Firebase and Application Variables ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        setLogLevel('error'); // Set log level
+        
+        let app = null;
+        let db = null;
+        let auth = null;
+        let userId = null;
+
+        // --- Application State Management (as per original file structure) ---
+        window.currentState = {
+            view: 'dashboard', // 'dashboard', 'project-details', 'upload'
+            selectedProjectId: null,
+            projects: [],
+            isAuthReady: false,
+            searchText: ''
+        };
+        
+        // --- Firebase Initialization and Authentication ---
+        const initFirebase = async () => {
+            if (!firebaseConfig) {
+                console.error("Firebase config is missing. Data persistence will be unavailable.");
+                window.currentState.isAuthReady = true;
+                return;
+            }
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    userId = user?.uid || crypto.randomUUID();
+                    window.currentState.isAuthReady = true;
+                    console.log("Firebase Auth Ready. User ID:", userId);
+                    startProjectListener(); // Start listening for data once authenticated
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                window.currentState.isAuthReady = true;
+            }
+        };
+
+        // --- Firestore Data Management ---
+        const getProjectsCollectionRef = () => {
+            // Using public data storage for a project showcase (shared data)
+            return collection(db, `artifacts/${appId}/public/data/projects`);
+        };
+
+        const startProjectListener = () => {
+             if (!db) { return; }
+
+             // Set up a query. Firestore doesn't support easy sorting without indexes, 
+             // so we'll fetch all and sort by timestamp/title in JS.
+             const q = query(getProjectsCollectionRef());
+
+             onSnapshot(q, (snapshot) => {
+                const projects = [];
+                snapshot.forEach((doc) => {
+                    projects.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort by creation time (descending) in memory
+                projects.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                window.currentState.projects = projects;
+                window.renderApp(); // Re-render the app on data change
+             }, (error) => {
+                 console.error("Error listening to projects:", error);
+             });
+        };
+
+        window.submitNewProject = async (projectData) => {
+            if (!db) { 
+                console.error("Database not initialized.");
+                alert("Submission failed: Database not ready."); 
+                return; 
+            }
+            try {
+                // Add userId to the project data for attribution
+                const newProject = {
+                    ...projectData,
+                    authorId: userId,
+                    createdAt: serverTimestamp()
+                };
+                await addDoc(getProjectsCollectionRef(), newProject);
+                window.currentState.view = 'dashboard';
+                window.renderApp();
+                // Instead of alert, use a custom message box
+                document.getElementById('messageBox').innerHTML = '<div class="bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-3 rounded relative" role="alert"><strong class="font-bold">Success!</strong><span class="block sm:inline"> Your project has been submitted.</span></div>';
+                setTimeout(() => document.getElementById('messageBox').innerHTML = '', 3000);
+
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                 document.getElementById('messageBox').innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"><strong class="font-bold">Error!</strong><span class="block sm:inline"> Submission failed. Check console for details.</span></div>';
+            }
+        };
+        
+        // Initialize everything on load
+        initFirebase();
+    </script>
     <style>
+        /* General Styles for Inter Font and smooth transitions */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Light Gray background for the whole page */
+            background-color: #f3f4f6; /* Light background for contrast */
         }
+        
+        /* Utility for line clamping */
         .line-clamp-3 {
             overflow: hidden;
             display: -webkit-box;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 3;
         }
-        /* Animation for the hero image */
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-15px); }
+
+        /* Modern Green Button Style */
+        .green-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
         }
-        .animated-bounce {
-            animation: bounce 2s infinite alternate ease-in-out;
+
+        .green-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
         }
-        /* Custom button gradient for a more professional look */
-        .btn-gradient-green {
-            background-image: linear-gradient(to right, #059669, #10B981);
+
+        /* Animated Picture Placeholder - CSS Wave Animation */
+        .wave-container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 1rem;
         }
-        .btn-gradient-yellow {
-             background-image: linear-gradient(to right, #F59E0B, #FBBF24);
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(236, 254, 255, 0.5) 0%, rgba(199, 210, 254, 0.5) 100%);
+            border-radius: 1rem;
         }
-        /* Style for the active navigation link */
-        .nav-link-active {
-            color: #FBBF24; /* Bright yellow to indicate the active page */
-            border-bottom: 2px solid #FBBF24;
+
+        .wave:nth-child(1) {
+            background-color: rgba(6, 182, 212, 0.2); /* Cyan */
+            animation: wave-motion 8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+        }
+        .wave:nth-child(2) {
+            background-color: rgba(244, 114, 182, 0.2); /* Rose */
+            animation: wave-motion 10s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate reverse;
+        }
+
+        @keyframes wave-motion {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1, 1);
+            }
+            100% {
+                transform: translate(5%, 10%) rotate(5deg) scale(1.1, 1.2);
+            }
+        }
+
+        /* Custom Scrollbar for better UX */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #047857; /* Dark Green */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #e5e7eb; /* Light Gray */
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <header class="bg-[#008000] text-white shadow-lg p-4 sticky top-0 z-20">
-        <div class="container mx-auto flex justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                 <img src="https://i.imgur.com/r5L43xG.png" alt="GLOEX.ORG Logo" style="height: 40px; filter: brightness(0) invert(1);">
-                <h1 class="text-2xl font-extrabold tracking-wider">
-                    <a href="#" onclick="switchView('dashboard')" id="appTitle">GLOEX</a>
-                </h1>
-            </div>
-            
-            <nav class="hidden md:flex items-center space-x-6" id="main-nav">
-                 <a href="#" data-view="dashboard" onclick="switchView('dashboard')" class="font-semibold text-white hover:text-yellow-300 transition pb-1">Project Hub</a>
-                 <a href="#" data-view="services" onclick="switchView('services')" class="font-semibold text-white hover:text-yellow-300 transition pb-1">Our Services</a>
-                 <a href="#" data-view="about" onclick="switchView('about')" class="font-semibold text-white hover:text-yellow-300 transition pb-1">About Us</a>
-            </nav>
+    <!-- Message Box Placeholder -->
+    <div id="messageBox" class="fixed top-4 right-4 z-50"></div>
 
-            <div class="flex-grow max-w-lg hidden md:block" id="search-bar-container">
-                <form id="search-form" onsubmit="handleSearch(event)">
-                    <div class="relative">
-                        <input type="search" name="query" placeholder="Search projects..."
-                               class="w-full p-2 pl-4 pr-10 border-2 border-transparent rounded-full bg-green-900 bg-opacity-50 text-white placeholder-gray-300 focus:ring-2 focus:ring-yellow-400 focus:bg-green-800 transition">
-                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <!-- HEADER (Green) -->
+    <header class="bg-emerald-700 shadow-xl p-4 sticky top-0 z-20">
+        <div class="container mx-auto flex flex-wrap justify-between items-center gap-4">
+            <!-- Logo (Well Positioned) -->
+            <h1 class="text-3xl font-extrabold text-white tracking-wider animate-pulse">
+                <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="appTitle" class="transition duration-300 hover:text-emerald-200">
+                    <span class="text-emerald-300">G</span>loEx <span class="text-emerald-300">H</span>ub
+                </a>
+            </h1>
             
-            <nav id="nav-actions">
-                </nav>
+            <!-- Search Bar (Well Positioned) -->
+            <div class="flex-grow max-w-xl">
+                <div class="relative">
+                    <input 
+                        type="search" 
+                        placeholder="Search projects, authors, or tags..." 
+                        id="searchInput"
+                        oninput="window.currentState.searchText = this.value; window.renderApp();"
+                        class="w-full py-2 pl-10 pr-4 rounded-full border-2 border-emerald-400 focus:outline-none focus:border-white text-gray-800 bg-white shadow-inner transition duration-300"
+                    >
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons (Green) -->
+            <nav class="flex space-x-3">
+                <button 
+                    onclick="window.currentState.view='upload'; window.renderApp();" 
+                    class="green-button bg-emerald-500 text-white font-semibold py-2 px-4 rounded-full hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 shadow-lg whitespace-nowrap text-sm md:text-base">
+                    Upload Project
+                </button>
+                <a href="https://www.gloex.org" target="_blank" class="green-button bg-transparent border-2 border-white text-white font-semibold py-2 px-4 rounded-full hover:bg-white hover:text-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 shadow-lg text-sm md:text-base">
+                    Main Site
+                </a>
+            </nav>
         </div>
     </header>
 
-    <main class="flex-grow" id="app-container">
-        </main>
-    
-    <footer class="bg-[#008000] text-white">
-        <div class="container mx-auto p-8 text-center">
-             <h3 class="text-2xl font-bold text-yellow-300">Ready to Start Your Project?</h3>
-             <p class="mt-2 text-green-200">Contact the ELIJUL GROUPS LTD team today.</p>
-             <div class="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-green-100">
-                <p><strong>Website:</strong> <a href="https://www.gloex.org" class="hover:underline hover:text-white">WWW.GLOEX.ORG</a></p>
-                <p><strong>Email (Web/Software):</strong> <a href="mailto:infogloex@proton.me" class="hover:underline hover:text-white">infogloex@proton.me</a></p>
-                <p><strong>Email (Partnership):</strong> <a href="mailto:info@gloex.org" class="hover:underline hover:text-white">info@gloex.org</a></p>
-                <p><strong>Phone/WhatsApp:</strong> +250788660513</p>
-             </div>
-             <div class="mt-6 pt-4 border-t border-green-700">
-                <p class="text-green-200"><strong>Address:</strong> Kigali, Rwanda</p>
-                <p class="mt-2 text-sm text-yellow-200">TWUBAKA-WEB by ELIJUL GROUPS LTD</p>
-             </div>
+    <!-- MAIN CONTENT CONTAINER -->
+    <main id="appContainer" class="flex-grow"></main>
+
+    <!-- FOOTER (Green) -->
+    <footer class="bg-emerald-800 text-white p-8 mt-auto shadow-inner">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+            
+            <!-- Section 1: Contact Info -->
+            <div class="contact-info">
+                <h3 class="text-2xl font-bold mb-3 text-emerald-200">Ready to Start?</h3>
+                <p class="text-sm mb-4">Contact the ELIJUL GROUPS LTD team today for professional solutions.</p>
+                <p class="mb-1">
+                    <span class="font-semibold text-emerald-300">Email (Web/Software):</span> 
+                    <a href="mailto:infogloex@proton.me" class="text-emerald-100 hover:text-white transition duration-200">infogloex@proton.me</a>
+                </p>
+                <p class="mb-1">
+                    <span class="font-semibold text-emerald-300">Email (Partnership):</span> 
+                    <a href="mailto:info@gloex.org" class="text-emerald-100 hover:text-white transition duration-200">info@gloex.org</a>
+                </p>
+                <p class="mb-1">
+                    <span class="font-semibold text-emerald-300">Phone/WhatsApp:</span> +250 788 660 513
+                </p>
+                <p class="mt-4 text-sm opacity-80">
+                    Address: Kigali, Rwanda
+                </p>
+            </div>
+
+            <!-- Section 2: Quick Links (Green) -->
+            <div>
+                <h3 class="text-xl font-bold mb-3 text-emerald-200">Quick Links</h3>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">Project Dashboard</a></li>
+                    <li><a href="https://www.gloex.org" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Official Website</a></li>
+                    <li><a href="#" class="text-emerald-100 hover:text-white transition duration-200">Services</a></li>
+                    <li><a href="#" class="text-emerald-100 hover:text-white transition duration-200">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <!-- Section 3: Popular Tags -->
+            <div>
+                <h3 class="text-xl font-bold mb-3 text-emerald-200">Popular Categories</h3>
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">WebDev</span>
+                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">AI/ML</span>
+                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">Mobile</span>
+                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">DataViz</span>
+                    <span class="bg-emerald-600 text-white px-2 py-1 rounded-full cursor-pointer hover:bg-emerald-500 transition duration-200">OpenSource</span>
+                </div>
+            </div>
+
+            <!-- Section 4: Call to Action (Green) -->
+             <div class="text-center md:text-left">
+                <h3 class="text-xl font-bold mb-3 text-emerald-200">Join the Community</h3>
+                <p class="mb-4 text-sm">Share your innovation and get feedback from global developers.</p>
+                <button 
+                    onclick="window.currentState.view='upload'; window.renderApp();" 
+                    class="green-button bg-emerald-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 w-full md:w-auto">
+                    START SHARING NOW
+                </button>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="mt-8 pt-4 border-t border-emerald-700 text-center text-sm opacity-75">
+            <p> &copy; 2025 ELIJUL GROUPS LTD. TWUBAKA-UBUMENYI. All rights reserved.</p>
         </div>
     </footer>
-    
-    <div id="message-box" class="fixed top-5 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-2xl text-white font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none text-base"></div>
-    <div id="project-detail-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
-        <div id="modal-content" class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            </div>
-    </div>
 
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- Configuration & State Management ---
-        const API_BASE_URL = 'https://gloex.pythonanywhere.com/api';
-        let currentState = {
-            user: null,
-            projects: [],
-            view: 'dashboard', // Default view
-            currentProjectDetail: null,
-            searchQuery: '',
-            portfolioUser: null,
-        };
-
-        const PROJECT_TYPE_OPTIONS = [
-            { value: 'frontend', label: 'Frontend Development' },
-            { value: 'backend', label: 'Backend Development' },
-            { value: 'fullstack', label: 'Full-Stack Application' },
-            { value: 'mobile', label: 'Mobile Application' },
-            { value: 'design', label: 'UI/UX Design' },
-            { value: 'other', label: 'Other' },
+        // Placeholder Project Data (Will be replaced by Firebase data)
+        const mockProjects = [
+            { id: 'p1', title: 'AI-Powered Stock Predictor', description: 'A Python-based machine learning model using LSTM networks to forecast stock market trends. 95% accuracy on historical data.', image: 'https://placehold.co/400x250/06b6d4/ffffff?text=AI+Model', tags: ['AI', 'Python', 'Finance'], author: 'Jane Doe', views: 1200, demoUrl: 'https://github.com/' },
+            { id: 'p2', title: 'Modern React E-commerce UI', description: 'A sleek, responsive e-commerce front-end built with React and Tailwind CSS, focusing on mobile-first design and accessibility.', image: 'https://placehold.co/400x250/f472b6/ffffff?text=React+UI', tags: ['React', 'WebDev', 'Frontend'], author: 'John Smith', views: 850, demoUrl: 'https://github.com/' },
+            { id: 'p3', title: 'Open Source IoT Dashboard', description: 'Real-time data visualization dashboard for home automation sensors using Node.js and D3.js. Easily extendable architecture.', image: 'https://placehold.co/400x250/4ade80/000000?text=IoT+Dashboard', tags: ['IoT', 'Node.js', 'DataViz'], author: 'Alice Brown', views: 420, demoUrl: 'https://github.com/' },
+            { id: 'p4', title: 'Game Engine in C++', description: 'A lightweight 2D game engine written from scratch in C++ with OpenGL rendering. Includes collision detection and basic physics.', image: 'https://placehold.co/400x250/fb7185/ffffff?text=C%2B%2B+Game', tags: ['C++', 'Gaming', 'Engine'], author: 'Bob Green', views: 2100, demoUrl: 'https://github.com/' },
         ];
         
-        // --- Utility Functions ---
-        function getCsrfToken() {
-            const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
-            return token ? decodeURIComponent(token.split('=')[1]) : null;
+        // Initial state load
+        if (window.currentState.projects.length === 0) {
+            window.currentState.projects = mockProjects;
         }
 
-        function showMessage(text, type = 'success') {
-            const box = document.getElementById('message-box');
-            box.textContent = text;
-            box.style.opacity = 1;
-            box.classList.remove('bg-green-600', 'bg-red-600', 'bg-blue-600');
-            if (type === 'success') box.classList.add('bg-green-600');
-            else if (type === 'error') box.classList.add('bg-red-600');
-            else box.classList.add('bg-blue-600'); // Info type
-            setTimeout(() => { box.style.opacity = 0; }, 3500);
-        }
+        const appContainer = document.getElementById('appContainer');
 
-        async function fetchData(url, options = {}) {
-            const defaultHeaders = { 'Content-Type': 'application/json' };
-            const config = { credentials: 'include', ...options, headers: { ...defaultHeaders, ...options.headers } };
-            if (options.method && options.method !== 'GET' && !(options.body instanceof FormData)) {
-                const csrfToken = getCsrfToken();
-                if (csrfToken) config.headers['X-CSRFToken'] = csrfToken;
-            }
-            if (options.body instanceof FormData) delete config.headers['Content-Type'];
-            const response = await fetch(url, config);
-            const contentType = response.headers.get("content-type");
-            if (!response.ok) {
-                const errorData = contentType?.includes("application/json") ? await response.json() : { error: `HTTP error! Status: ${response.status}` };
-                if (response.status === 401 || response.status === 403) {
-                    currentState.user = null;
-                    renderApp();
-                }
-                throw new Error(JSON.stringify(errorData) || `Request failed.`);
-            }
-            return contentType?.includes("application/json") ? response.json() : response;
-        }
+        // --- View Rendering Functions ---
 
-        function switchView(viewName, portfolioUser = null) {
-            currentState.view = viewName;
-            currentState.portfolioUser = portfolioUser;
-            currentState.searchQuery = ''; // Clear search when switching views
-            const searchForm = document.getElementById('search-form');
-            if(searchForm) searchForm.reset();
-            renderApp();
-            return false; // Prevent default link behavior
-        }
-        
-        // --- API Calls (All functionality from original files is preserved) ---
-        async function checkAuth() {
-            try { const user = await fetchData(`${API_BASE_URL}/user/`); currentState.user = user.is_authenticated ? user : null; } catch (error) { currentState.user = null; }
-        }
-        
-        async function fetchProjects(username = null) {
-            let url = `${API_BASE_URL}/projects/`;
-            if (username) url = `${API_BASE_URL}/portfolio/${username}/`;
-            try { currentState.projects = await fetchData(url); } catch (error) { showMessage(`Failed to load projects: ${error.message}`, 'error'); currentState.projects = []; }
-        }
+        // 1. Dashboard View (Landing page, Hero, CTA, Project Grid)
+        const renderDashboard = () => {
+            const { projects, searchText } = window.currentState;
 
-        async function fetchProjectDetail(projectId) {
-            try { const project = await fetchData(`${API_BASE_URL}/projects/${projectId}/`); currentState.currentProjectDetail = project; renderProjectDetailModal(); } catch (error) { showMessage(`Failed to load project details: ${error.message}`, 'error'); }
-        }
-        
-        async function handleSearch(event) {
-            event.preventDefault();
-            const query = event.target.elements.query.value.trim();
-            currentState.searchQuery = query;
-            currentState.view = 'dashboard';
-            if (!query) { await fetchProjects(); } else { try { currentState.projects = await fetchData(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}`); } catch (error) { showMessage(`Search failed: ${error.message}`, 'error'); currentState.projects = []; } }
-            renderApp();
-        }
+            const filteredProjects = projects.filter(p => 
+                p.title.toLowerCase().includes(searchText.toLowerCase()) || 
+                p.description.toLowerCase().includes(searchText.toLowerCase()) ||
+                p.tags.some(tag => tag.toLowerCase().includes(searchText.toLowerCase())) ||
+                p.author.toLowerCase().includes(searchText.toLowerCase())
+            );
 
-        async function handleAuthForm(event, endpoint) {
-            event.preventDefault();
-            const data = Object.fromEntries(new FormData(event.target).entries());
-            try { const user = await fetchData(`${API_BASE_URL}/${endpoint}/`, { method: 'POST', body: JSON.stringify(data) }); currentState.user = user; showMessage(`Welcome, ${user.username}!`, 'success'); switchView('dashboard'); } catch (error) { showMessage(`Authentication failed: ${error.message}`, 'error'); }
-        }
+            // Function to generate a single project card
+            const generateProjectCard = (project) => {
+                // Alternating card colors (Blue and Pink) for modern look
+                const isBlue = project.id.charCodeAt(project.id.length - 1) % 2 === 0;
+                const bgColor = isBlue ? 'bg-sky-50' : 'bg-rose-50';
+                const borderColor = isBlue ? 'border-sky-300' : 'border-rose-300';
+                const textColor = isBlue ? 'text-sky-800' : 'text-rose-800';
+                const tagColor = isBlue ? 'bg-sky-200 text-sky-800' : 'bg-rose-200 text-rose-800';
 
-        async function handleLogout() {
-            await fetchData(`${API_BASE_URL}/logout/`, { method: 'POST' });
-            currentState.user = null;
-            showMessage('Successfully logged out.', 'info');
-            switchView('dashboard');
-        }
-
-        async function handlePostProject(event) {
-            event.preventDefault();
-            try { const newProject = await fetchData(`${API_BASE_URL}/projects/`, { method: 'POST', body: new FormData(event.target) }); currentState.projects.unshift(newProject); showMessage('Project successfully posted!', 'success'); event.target.reset(); renderApp(); } catch (error) { showMessage(`Posting failed: ${error.message}`, 'error'); }
-        }
-        
-        async function handleDeleteProject(projectId) {
-            if (!confirm('Are you sure you want to permanently delete this project?')) return;
-            try { await fetchData(`${API_BASE_URL}/projects/${projectId}/`, { method: 'DELETE' }); currentState.projects = currentState.projects.filter(p => p.id !== projectId); showMessage('Project deleted successfully.', 'success'); closeProjectDetailModal(); renderApp(); } catch (error) { showMessage(`Deletion failed: ${error.message}`, 'error'); }
-        }
-        
-        async function handleLikeToggle(projectId) {
-            if (!currentState.user) { showMessage('You must be logged in to like projects.', 'error'); return; }
-            try { const response = await fetchData(`${API_BASE_URL}/projects/${projectId}/like/`, { method: 'POST', body: JSON.stringify({}) }); const projectInList = currentState.projects.find(p => p.id === projectId); if (projectInList) { projectInList.likes_count = response.likes_count; projectInList.user_has_liked = response.action === 'liked'; } if (currentState.currentProjectDetail?.id === projectId) { currentState.currentProjectDetail.likes_count = response.likes_count; currentState.currentProjectDetail.user_has_liked = response.action === 'liked'; renderProjectDetailModal(); } renderApp(); } catch (error) { showMessage(`Like action failed: ${error.message}`, 'error'); }
-        }
-
-        async function handlePostComment(event, projectId) {
-            event.preventDefault();
-            const content = event.target.elements.comment_content.value.trim();
-            if (!content) return;
-            try { const newComment = await fetchData(`${API_BASE_URL}/projects/${projectId}/comments/`, { method: 'POST', body: JSON.stringify({ content }) }); currentState.currentProjectDetail.comments.unshift(newComment); event.target.reset(); renderProjectDetailModal(); } catch (error) { showMessage(`Comment failed: ${error.message}`, 'error'); }
-        }
-        
-        async function handleDeleteComment(projectId, commentId) {
-            if (!confirm('Are you sure you want to delete this comment?')) return;
-            try { await fetchData(`${API_BASE_URL}/projects/${projectId}/comments/${commentId}/`, { method: 'DELETE' }); currentState.currentProjectDetail.comments = currentState.currentProjectDetail.comments.filter(c => c.id !== commentId); renderProjectDetailModal(); showMessage('Comment deleted.', 'success'); } catch (error) { showMessage(`Could not delete comment: ${error.message}`, 'error'); }
-        }
-
-
-        // --- Static Content Rendering (New attractive sections) ---
-        function renderHeroSection() {
-            return `
-            <div class="relative bg-green-50 overflow-hidden">
-                <div class="container mx-auto px-4 py-16 md:py-24">
-                    <div class="grid md:grid-cols-2 gap-8 items-center">
-                        <div class="text-center md:text-left">
-                            <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-800 leading-tight">
-                                Build, Share, and Discover<br><span class="text-green-600">Amazing Projects.</span>
-                            </h2>
-                            <p class="mt-4 text-lg text-gray-600 max-w-lg mx-auto md:mx-0">
-                                Welcome to the GLOEX Hub, a community for developers and creators in Rwanda and beyond. Showcase your work, get feedback, and find inspiration.
-                            </p>
-                            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                                <a href="#" onclick="switchView('services')" class="btn-gradient-green text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
-                                    Our Services
-                                </a>
-                                <a href="https://gitlab.com/bizimanasoftware/" target="_blank" class="bg-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
-                                    View GitLab
+                return `
+                    <div onclick="window.currentState.selectedProjectId='${project.id}'; window.currentState.view='project-details'; window.renderApp();" 
+                         class="transform transition duration-500 hover:scale-[1.02] cursor-pointer rounded-xl overflow-hidden shadow-2xl ${bgColor} border ${borderColor} flex flex-col h-full">
+                        <img src="${project.image}" alt="${project.title} Preview" class="w-full h-40 object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x250/ccc/000?text=Image+Not+Found'">
+                        <div class="p-6 flex flex-col justify-between flex-grow">
+                            <div>
+                                <h3 class="font-bold text-xl mb-2 ${textColor}">${project.title}</h3>
+                                <p class="text-gray-600 text-sm line-clamp-3 mb-3">${project.description}</p>
+                            </div>
+                            <div>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    ${project.tags.map(tag => `<span class="text-xs font-semibold px-3 py-1 rounded-full ${tagColor}">${tag}</span>`).join('')}
+                                </div>
+                                <a href="${project.demoUrl}" target="_blank" onclick="event.stopPropagation();" 
+                                   class="green-button inline-flex items-center justify-center bg-emerald-500 text-white font-semibold py-2 px-4 rounded-lg text-sm hover:bg-emerald-600 w-full transition duration-300">
+                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                    View Demo
                                 </a>
                             </div>
                         </div>
-                        <div class="flex justify-center items-center">
-                            <img src="https://i.imgur.com/GgS0i5H.png" alt="GLOEX Services Tank Animation" class="animated-bounce max-w-sm md:max-w-md w-full">
+                    </div>
+                `;
+            };
+
+            // Main Dashboard HTML structure
+            appContainer.innerHTML = `
+                <!-- HERO SECTION (Animated Picture & Blue/Pink Background) -->
+                <section class="bg-gradient-to-br from-sky-100 to-rose-100 p-8 md:p-16 relative overflow-hidden">
+                    <div class="wave-container absolute inset-0 -z-10">
+                        <div class="wave transform scale-[1.5]"></div>
+                        <div class="wave transform scale-[1.3]"></div>
+                    </div>
+
+                    <div class="container mx-auto flex flex-col md:flex-row items-center gap-10 relative z-10">
+                        <!-- Hero Text and Call to Action -->
+                        <div class="md:w-1/2 text-center md:text-left">
+                            <h2 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
+                                Showcase Your <span class="text-emerald-600">Innovation.</span> Get Discovered.
+                            </h2>
+                            <p class="text-xl text-gray-700 mb-8">
+                                The gloEx Hub is where creators share their working demos, connecting ideas with opportunities.
+                            </p>
+                            
+                            <!-- Call to Actions (Green Buttons) -->
+                            <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                                <button 
+                                    onclick="window.currentState.view='upload'; window.renderApp();" 
+                                    class="green-button bg-emerald-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-300 shadow-xl">
+                                    START SHARING (It's Free!)
+                                </button>
+                                <a href="#projects" class="green-button bg-transparent border-2 border-emerald-600 text-emerald-800 font-bold py-3 px-8 rounded-lg text-lg hover:bg-emerald-600 hover:text-white transition duration-300 shadow-lg">
+                                    BROWSE PROJECTS
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Animated Picture Placeholder -->
+                        <div class="md:w-1/2 h-64 md:h-96 relative flex items-center justify-center">
+                            <!-- Placeholder for Animated Picture (Icon/Illustration) -->
+                            <div class="text-9xl text-emerald-400 opacity-80 transform transition duration-1000 animate-bounce">
+                                <svg class="w-24 h-24 md:w-40 md:h-40 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7.5 3.75C7.5 3.75 6.75 3 6 3c-.75 0-1.5.75-1.5 1.5S4.5 6 5.25 6s1.5-.75 1.5-1.5zm10.5 0c-.75 0-1.5.75-1.5 1.5s.75 1.5 1.5 1.5 1.5-.75 1.5-1.5-.75-1.5-1.5-1.5zM12 10.5v5.25m-2.25-3h4.5M14.25 18c-2.75 0-4.5 1.5-4.5 1.5s-1.75-1.5-4.5-1.5a3 3 0 010-6h9a3 3 0 010 6z"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>`;
-        }
-        
-        function renderAboutView() {
-            return `<div class="bg-pink-50 rounded-xl shadow-lg p-8 md:p-12 container mx-auto my-8">
-                <div class="text-center">
-                    <p class="text-pink-500 font-semibold uppercase tracking-wider">Discover GLOEX.ORG</p>
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-gray-800 mt-2">Get Your Digital Solution Today!</h2>
-                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">We build robust, affordable, and scalable digital solutions tailored for your business needs, right here in Kigali, Rwanda.</p>
-                    <div class="mt-6 text-2xl font-bold text-green-600 border-2 border-dashed border-green-400 inline-block p-4 rounded-lg bg-white">
-                        Projects Starting From Just 20,000 RWF
-                    </div>
-                </div>
-                <div class="mt-12 text-center">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-6">See Our Live Work in Action</h3>
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <a href="https://bizimanasoftware.pythonanywhere.com" target="_blank" class="btn-gradient-green text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">LAUNCH TALENTHUB-DEMO</a>
-                        <a href="https://addproducts.pythonanywhere.com" target="_blank" class="btn-gradient-green text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">LAUNCH E-COMMERCE-DEMO</a>
-                    </div>
-                </div>
-            </div>`;
-        }
-        
-        function renderServicesView() {
-            const services = {
-                "Web & Software Development": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>`, items: ["Website Maintenance & Management", "Custom Web/Mobile Apps", "Advanced API & AI Integration", "Ecommerce & Online Payments"] },
-                "Business & Financial Systems": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`, items: ["Billing, POS & Invoicing Systems", "HR, Payroll & CRM Tools", "Stock & Inventory Management", "Ticketing & Customer Support"] },
-                "Cyber Security & Data": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`, items: ["Proactive Cyber Security Support", "Cloud & DevOps Infrastructure", "Data Analytics & BI Dashboards"] },
-                "Marketing & Branding": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.354A1.76 1.76 0 016.5 12H6a1.76 1.76 0 00-1.76 1.76l.006.007a1.76 1.76 0 01-3.417-.592l-.006-.007A1.76 1.76 0 011 12h-.5a1.76 1.76 0 01-1.47-2.828l2.148-6.354A1.76 1.76 0 013.5 2H4a1.76 1.76 0 011.76 1.76l-.006.007a1.76 1.76 0 003.417.592l.006-.007A1.76 1.76 0 0110 2h.5a1.76 1.76 0 011.47 2.828l-2.148 6.354A1.76 1.76 0 008.5 12H8a1.76 1.76 0 001.76-1.76l-.006-.007a1.76 1.76 0 013.417.592l.006.007A1.76 1.76 0 0014 12h.5a1.76 1.76 0 001.47-2.828l-2.148-6.354A1.76 1.76 0 0112.5 2H12a1.76 1.76 0 00-1.76 1.76l.006.007a1.76 1.76 0 01-3.417-.592L6.828 2.828A1.76 1.76 0 018.5 2H9a1.76 1.76 0 011.76 1.76L11 5.882z" /></svg>`, items: ["SEO & Digital Marketing", "Logo Branding & Graphic Design", "SMS/Email Marketing Campaigns", "Professional Email Hosting"] }
-            };
-            let html = `<div class="bg-blue-50 rounded-xl shadow-lg p-8 md:p-12 container mx-auto my-8">
-                <h2 class="text-center text-4xl font-extrabold text-gray-800 mb-2">Our Digital Services</h2>
-                <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">We offer a complete suite of services to build, launch, and grow your digital presence.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">`;
-            for (const category in services) {
-                html += `<div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-                    <div class="flex items-center gap-4 mb-4">
-                        ${services[category].icon}
-                        <h3 class="text-xl font-bold text-gray-800">${category}</h3>
-                    </div>
-                    <ul class="space-y-2">
-                        ${services[category].items.map(item => `
-                            <li class="flex items-start">
-                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                <span class="text-gray-600">${item}</span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>`;
-            }
-            html += `</div></div>`;
-            return html;
-        }
+                </section>
 
-        // --- Dynamic Component Rendering (Forms, Cards, Modals) ---
-        function renderAuthView() { return `<div class="container mx-auto my-8"><div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-2xl"><h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Access Project Hub</h2><div class="flex border border-gray-200 rounded-lg p-1 mb-6"><button onclick="switchView('login')" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'login' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Login</button><button onclick="switchView('register')" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'register' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Register</button></div>${currentState.view === 'login' ? renderLoginForm() : renderRegisterForm()}</div></div>`; }
-        function renderLoginForm() { return `<form onsubmit="handleAuthForm(event, 'login')"><div class="mb-4"><label for="u_login" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_login" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="mb-5"><label for="p_login" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_login" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><button type="submit" class="w-full btn-gradient-green text-white p-3 rounded-lg font-semibold hover:opacity-90 transition shadow">Sign In</button></form>`; }
-        function renderRegisterForm() { return `<form onsubmit="handleAuthForm(event, 'register')"><div class="mb-4"><label for="u_reg" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_reg" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="mb-4"><label for="e_reg" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="e_reg" name="email" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="mb-5"><label for="p_reg" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_reg" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><button type="submit" class="w-full btn-gradient-green text-white p-3 rounded-lg font-semibold hover:opacity-90 transition shadow">Create Account</button></form>`; }
-        function renderPostForm() { if (!currentState.user) return ''; return `<div class="p-6 bg-white rounded-xl shadow-lg mb-8"><h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Share Your Project</h3><form onsubmit="handlePostProject(event)" enctype="multipart/form-data"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="space-y-4"><div><label for="title" class="text-sm font-medium text-gray-700">Project Title *</label><input type="text" name="title" required class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div><label for="project_url" class="text-sm font-medium text-gray-700">Demo/Primary Link *</label><input type="url" name="project_url" required placeholder="https://" class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div><label for="project_type" class="text-sm font-medium text-gray-700">Category</label><select name="project_type" class="mt-1 w-full p-2 border bg-white rounded-lg focus:ring-yellow-500 focus:border-yellow-500">${PROJECT_TYPE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}</select></div><div><label for="description" class="text-sm font-medium text-gray-700">Description</label><textarea name="description" rows="5" placeholder="Briefly describe your project..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea></div></div><div class="space-y-4"><div><label for="screenshot" class="text-sm font-medium text-gray-700">Screenshot (Upload)</label><input type="file" name="screenshot" accept="image/*" class="mt-1 text-sm w-full border rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"></div><div><label for="screenshot_url_fallback" class="text-sm font-medium text-gray-700">OR Image Link (Fallback)</label><input type="url" name="screenshot_url_fallback" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div><label for="source_code_url" class="text-sm font-medium text-gray-700">Source Code Link</label><input type="url" name="source_code_url" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="grid grid-cols-2 gap-2"><label class="col-span-2 text-sm font-medium text-gray-700">Optional Custom Field</label><input type="text" name="custom_field_name" placeholder="Label" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"><input type="text" name="custom_field_value" placeholder="Value" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="flex items-center pt-4"><input name="is_public" type="checkbox" checked class="h-4 w-4 text-green-600 rounded focus:ring-green-500"><label for="is_public" class="ml-2 text-sm text-gray-700">Make this post public</label></div></div></div><button type="submit" class="mt-6 w-full btn-gradient-green text-white p-3 rounded-lg font-semibold hover:opacity-90 transition shadow-lg">Submit Project</button></form></div>`; }
-        function renderProjectCard(project) { const imageUrl = project.screenshot_url || 'https://via.placeholder.com/400x250?text=No+Image'; return `<div class="bg-white rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col cursor-pointer" onclick="fetchProjectDetail(${project.id})"><img src="${imageUrl}" alt="${project.title} screenshot" class="w-full h-48 object-cover rounded-t-xl"><div class="p-4 flex flex-col flex-grow"><div class="flex justify-between items-start mb-2"><h4 class="text-xl font-bold text-gray-800 pr-2">${project.title}</h4><span class="text-xs font-semibold text-blue-800 bg-blue-100 px-2 py-1 rounded-full whitespace-nowrap">${project.project_type}</span></div><p class="text-gray-600 mb-3 text-sm flex-grow line-clamp-3">${project.description || 'No description provided.'}</p><div class="flex justify-between items-center text-sm text-gray-500 pt-2 border-t mt-auto"><p>By: <a href="#" onclick="event.stopPropagation(); switchView('portfolio', '${project.username}')" class="font-medium text-green-700 hover:underline">${project.username}</a></p><button onclick="event.stopPropagation(); handleLikeToggle(${project.id})" class="flex items-center font-bold ${project.user_has_liked ? 'text-red-500' : 'text-gray-400'} hover:text-red-500 transition"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>${project.likes_count}</button></div></div></div>`; }
-        function renderProjectDetailModal() { const modal = document.getElementById('project-detail-modal'); const content = document.getElementById('modal-content'); const p = currentState.currentProjectDetail; if (!p) { closeProjectDetailModal(); return; } const isOwner = currentState.user?.id === p.user_id; const ownerButtons = isOwner ? `<button onclick="handleDeleteProject(${p.id})" class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200">Delete Project</button>` : ''; const shareButton = `<button onclick="navigator.clipboard.writeText(window.location.origin + '?project=${p.id}'); showMessage('Link copied to clipboard!', 'info')" class="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200">Share</button>`; const sourceCodeButton = p.source_code_url ? `<a href="${p.source_code_url}" target="_blank" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">View Source Code</a>` : ''; const customFieldHtml = (p.custom_field_name && p.custom_field_value) ? `<h4 class="text-lg font-semibold text-gray-800 mt-6 mb-1">${p.custom_field_name}</h4><p class="text-gray-600 whitespace-pre-wrap">${p.custom_field_value}</p>` : ''; const commentsHtml = p.comments?.length > 0 ? p.comments.map(c => `<div class="border-b last:border-b-0 py-3"><div class="flex justify-between items-start"><div><p class="font-semibold text-gray-800">${c.username}</p><p class="text-gray-600 text-sm">${c.content}</p></div>${(isOwner || currentState.user?.id === c.user_id) ? `<button onclick="handleDeleteComment(${p.id}, ${c.id})" class="text-red-500 hover:text-red-700 text-xs p-1">&times;</button>` : ''}</div><span class="text-xs text-gray-400 mt-1">${new Date(c.created_at).toLocaleString()}</span></div>`).join('') : `<p class="text-gray-500 text-sm">No comments yet. Be the first!</p>`; content.innerHTML = `<div class="p-6 relative"><button class="absolute top-4 right-4 text-gray-500 hover:text-black" onclick="closeProjectDetailModal()"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="grid grid-cols-1 lg:grid-cols-5 gap-8"><div class="lg:col-span-3"><h2 class="text-3xl font-extrabold text-black mb-1">${p.title}</h2><p class="text-sm font-medium text-green-700 mb-4">${p.project_type} by <a href="#" onclick="event.stopPropagation(); closeProjectDetailModal(); switchView('portfolio', '${p.username}')" class="font-semibold hover:underline">${p.username}</a></p><img src="${p.screenshot_url || 'https://via.placeholder.com/800x500?text=No+Screenshot'}" alt="${p.title}" class="w-full h-auto rounded-lg shadow-xl mb-6"><div class="flex items-center justify-between gap-4 border-t border-b py-3 mb-6"><div class="flex items-center gap-2"><button onclick="handleLikeToggle(${p.id})" class="flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition ${p.user_has_liked ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">${p.likes_count} ${p.user_has_liked ? 'Unlike' : 'Like'}</button><a href="${p.project_url}" target="_blank" class="btn-gradient-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition">View Live Demo</a>${sourceCodeButton}</div><div class="flex items-center gap-2">${shareButton} ${ownerButtons}</div></div><h3 class="text-xl font-semibold text-gray-800 mb-2">Description</h3><p class="text-gray-600 mb-6 whitespace-pre-wrap">${p.description || 'No description provided.'}</p>${customFieldHtml}</div><div class="lg:col-span-2 border-t lg:border-t-0 lg:border-l lg:pl-6"><h3 class="text-2xl font-bold text-gray-800 mb-4">Comments (${p.comments.length})</h3>${currentState.user ? `<form onsubmit="handlePostComment(event, ${p.id})" class="mb-6"><textarea name="comment_content" rows="3" required placeholder="Add a comment..." class="w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea><button type="submit" class="mt-2 w-full btn-gradient-green text-white p-2 rounded-lg text-sm font-semibold hover:opacity-90">Post Comment</button></form>` : `<p class="text-sm text-red-500 mb-4">Log in to post a comment.</p>`}<div class="max-h-[50vh] overflow-y-auto space-y-2 pr-2">${commentsHtml}</div></div></div></div>`; modal.classList.remove('hidden'); modal.classList.add('flex'); }
-        function closeProjectDetailModal() { document.getElementById('project-detail-modal').classList.add('hidden'); document.getElementById('project-detail-modal').classList.remove('flex'); currentState.currentProjectDetail = null; if (window.history.pushState) { const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname; window.history.pushState({ path: newURL }, '', newURL); } }
-        
-        function renderDashboardView() {
-            const isPortfolio = currentState.view === 'portfolio';
-            const isSearch = !!currentState.searchQuery;
-            let title = `Community Projects (${currentState.projects.length})`;
-            if (isPortfolio) title = `${currentState.portfolioUser}'s Portfolio`;
-            if (isSearch) title = `Search Results for "${currentState.searchQuery}" (${currentState.projects.length})`;
+                <!-- LATEST PROJECTS SECTION -->
+                <section id="projects" class="container mx-auto px-4 py-12">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-4xl font-extrabold text-gray-900 border-b-4 border-emerald-500 pb-2">
+                            Latest Projects (${filteredProjects.length})
+                        </h2>
+                    </div>
 
-            const projectsHtml = currentState.projects.length > 0
-                ? currentState.projects.map(renderProjectCard).join('')
-                : `<p class="col-span-full text-center text-gray-500 py-10">No projects found.</p>`;
+                    ${filteredProjects.length > 0 ? `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                            ${filteredProjects.map(generateProjectCard).join('')}
+                        </div>
+                    ` : `
+                        <div class="text-center p-10 bg-white rounded-xl shadow-lg border border-gray-200">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No projects found</h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Try adjusting your search term or be the first to <a href="#" onclick="window.currentState.view='upload'; window.renderApp();" class="text-emerald-600 font-semibold hover:text-emerald-500">upload a project</a>!
+                            </p>
+                        </div>
+                    `}
+                </section>
+
+                <!-- Mid-Page CTA (Green/Dark Theme) -->
+                <section class="bg-gray-800 p-12 my-10">
+                    <div class="container mx-auto text-center">
+                        <h2 class="text-4xl font-extrabold text-white mb-4">
+                            Need a Custom Solution?
+                        </h2>
+                        <p class="text-xl text-emerald-200 mb-8">
+                            Our team at ELIJUL GROUPS LTD offers professional web and software development services tailored to your needs.
+                        </p>
+                        <a href="https://www.gloex.org" target="_blank" class="green-button bg-emerald-500 text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300 shadow-xl transition duration-300">
+                            GET A FREE CONSULTATION
+                        </a>
+                    </div>
+                </section>
+
+                <!-- FEATURES SECTION (Blue/Pink Accent) -->
+                <section class="container mx-auto px-4 py-12">
+                    <h2 class="text-4xl font-extrabold text-center text-gray-900 border-b-4 border-rose-500 pb-2 mb-12">
+                        Why Choose gloEx Hub?
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Feature 1 -->
+                        <div class="bg-sky-50 p-6 rounded-xl shadow-lg border-t-4 border-sky-400 transform transition duration-300 hover:shadow-xl">
+                            <div class="text-4xl text-sky-600 mb-3">💡</div>
+                            <h3 class="text-2xl font-bold text-sky-900 mb-2">Visibility</h3>
+                            <p class="text-gray-700">Get your work in front of hundreds of potential collaborators and employers. Maximize your project's reach globally.</p>
+                        </div>
+                        <!-- Feature 2 -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-400 transform transition duration-300 hover:shadow-xl">
+                            <div class="text-4xl text-emerald-600 mb-3">🛠️</div>
+                            <h3 class="text-2xl font-bold text-emerald-900 mb-2">Feedback Loop</h3>
+                            <p class="text-gray-700">Receive constructive, real-world feedback on your demos to iterate and improve your solutions faster than ever.</p>
+                        </div>
+                        <!-- Feature 3 -->
+                        <div class="bg-rose-50 p-6 rounded-xl shadow-lg border-t-4 border-rose-400 transform transition duration-300 hover:shadow-xl">
+                            <div class="text-4xl text-rose-600 mb-3">🤝</div>
+                            <h3 class="text-2xl font-bold text-rose-900 mb-2">Networking</h3>
+                            <p class="text-gray-700">Connect with ELIJUL GROUPS LTD for potential partnerships, jobs, and professional development opportunities.</p>
+                        </div>
+                    </div>
+                </section>
+            `;
+        };
+
+        // 2. Project Details View
+        const renderProjectDetails = () => {
+            const project = window.currentState.projects.find(p => p.id === window.currentState.selectedProjectId);
             
-            return `
-                ${!isPortfolio && !isSearch ? renderHeroSection() : ''}
-                <div class="container mx-auto px-4 py-8">
-                    ${!isPortfolio ? renderPostForm() : ''}
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 mt-8 border-b pb-3">${title}</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        ${projectsHtml}
+            if (!project) {
+                // If project not found, redirect to dashboard
+                window.currentState.view = 'dashboard';
+                window.renderApp();
+                return;
+            }
+
+            appContainer.innerHTML = `
+                <section class="container mx-auto px-4 py-12">
+                    <!-- Back Button (Green Link) -->
+                    <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="inline-flex items-center text-emerald-700 hover:text-emerald-900 font-semibold mb-6 transition duration-300">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Back to Dashboard
+                    </a>
+
+                    <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-emerald-500">
+                        <!-- Project Header -->
+                        <h1 class="text-4xl font-extrabold text-gray-900 mb-2">${project.title}</h1>
+                        <p class="text-lg text-gray-500 mb-6">By: <span class="font-semibold text-emerald-600">${project.author}</span></p>
+
+                        <!-- Image and Details Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- Image/Media -->
+                            <div class="lg:col-span-2">
+                                <img src="${project.image}" alt="${project.title}" class="w-full h-auto rounded-lg shadow-xl mb-6" onerror="this.onerror=null; this.src='https://placehold.co/800x450/ccc/000?text=Project+Image'">
+                                
+                                <h3 class="text-2xl font-bold text-gray-800 mb-3 border-b pb-2">Full Description</h3>
+                                <p class="text-gray-700 leading-relaxed">
+                                    ${project.description} 
+                                    <br><br>
+                                    This is a placeholder for a more detailed, multi-paragraph description. The project aims to solve complex problems using modern technology stacks and efficient architecture. It represents weeks of dedicated effort and problem-solving. Review the demo link for the live experience.
+                                </p>
+                            </div>
+                            
+                            <!-- Sidebar (Metadata & CTAs) -->
+                            <div class="lg:col-span-1 bg-gray-50 p-6 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Project Metadata</h3>
+
+                                <div class="space-y-4 mb-6">
+                                    <p><span class="font-semibold text-gray-600">Views:</span> ${project.views || 0}</p>
+                                    <p><span class="font-semibold text-gray-600">Submission Date:</span> ${new Date().toLocaleDateString()}</p>
+                                </div>
+                                
+                                <h4 class="text-lg font-semibold text-gray-700 mb-3">Technologies Used:</h4>
+                                <div class="flex flex-wrap gap-2 mb-8">
+                                    ${project.tags.map(tag => `<span class="text-sm font-semibold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">${tag}</span>`).join('')}
+                                </div>
+
+                                <!-- Action Buttons (Green) -->
+                                <div class="space-y-4">
+                                    <a href="${project.demoUrl}" target="_blank" class="green-button block w-full text-center bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300">
+                                        <svg class="w-5 h-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                        Visit Live Demo
+                                    </a>
+                                    <button onclick="window.currentState.view='upload'; window.renderApp();" class="green-button block w-full text-center bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-300">
+                                        Ask Author a Question
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>`;
-        }
-        
-        // --- Main Application Controller ---
-        function renderHeaderNav() {
-            const nav = document.getElementById('nav-actions');
-            const searchContainer = document.getElementById('search-bar-container');
-            if (currentState.view === 'dashboard' || currentState.view === 'portfolio') {
-                searchContainer.classList.remove('hidden');
-            } else {
-                searchContainer.classList.add('hidden');
+                </section>
+            `;
+        };
+
+        // 3. Upload View (Form for submission)
+        const renderUpload = () => {
+            const handleSubmit = (event) => {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const projectData = {
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    demoUrl: formData.get('demoUrl'),
+                    image: formData.get('imageUrl') || 'https://placehold.co/400x250/ccc/000?text=Pending+Image',
+                    tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
+                    author: 'Anonymous Contributor' // Will be overwritten by Firebase user data
+                };
+                
+                // Submit to Firebase
+                window.submitNewProject(projectData);
+            };
+
+            appContainer.innerHTML = `
+                <section class="container mx-auto px-4 py-12">
+                    <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl border-t-4 border-rose-500">
+                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Submit Your Project Demo</h2>
+                        <p class="text-center text-lg text-gray-600 mb-8">Share your work with the community and get feedback.</p>
+
+                        <form id="uploadForm" onsubmit="handleSubmit(event)" class="space-y-6">
+                            
+                            <!-- Project Title -->
+                            <div>
+                                <label for="title" class="block text-sm font-medium text-gray-700">Project Title</label>
+                                <input type="text" id="title" name="title" required placeholder="e.g., Ultra-Fast Python Backend API"
+                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label for="description" class="block text-sm font-medium text-gray-700">Detailed Description (Max 300 words)</label>
+                                <textarea id="description" name="description" rows="5" required placeholder="Provide a detailed explanation of your project, its technology stack, and features."
+                                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+                            </div>
+
+                            <!-- Demo URL -->
+                            <div>
+                                <label for="demoUrl" class="block text-sm font-medium text-gray-700">Live Demo or Repository URL</label>
+                                <input type="url" id="demoUrl" name="demoUrl" required placeholder="https://github.com/your-project"
+                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+
+                            <!-- Image URL -->
+                            <div>
+                                <label for="imageUrl" class="block text-sm font-medium text-gray-700">Project Image URL (Optional)</label>
+                                <input type="url" id="imageUrl" name="imageUrl" placeholder="https://i.imgur.com/project-screenshot.png"
+                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+
+                             <!-- Tags -->
+                            <div>
+                                <label for="tags" class="block text-sm font-medium text-gray-700">Tags (Comma separated)</label>
+                                <input type="text" id="tags" name="tags" required placeholder="e.g., React, Tailwind, NextJS, Python"
+                                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+
+                            <!-- Submission Button (Green) -->
+                            <button type="submit" 
+                                    class="green-button w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300">
+                                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                Submit Project
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            `;
+            // Attach the submit handler after the form is rendered
+            document.getElementById('uploadForm').onsubmit = handleSubmit;
+        };
+
+        // --- Main Application Renderer ---
+        window.renderApp = () => {
+            // Show loading spinner if auth is not ready and we are fetching data
+            if (!window.currentState.isAuthReady && window.currentState.projects.length === 0) {
+                 appContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center min-h-[50vh] text-emerald-600">
+                        <svg class="animate-spin h-10 w-10 text-emerald-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="text-lg font-semibold">Loading Application Data...</p>
+                    </div>
+                 `;
+                 return;
             }
 
-            // Update active nav link style
-            document.querySelectorAll('#main-nav a').forEach(link => {
-                link.classList.remove('nav-link-active');
-                if (link.getAttribute('data-view') === currentState.view) {
-                    link.classList.add('nav-link-active');
-                }
-            });
-
-            if (currentState.user) {
-                nav.innerHTML = `<div class="flex items-center space-x-3">
-                        <button onclick="switchView('portfolio', '${currentState.user.username}')" class="text-sm font-semibold text-white hover:text-yellow-300">My Portfolio</button>
-                        <button onclick="handleLogout()" class="btn-gradient-yellow text-black px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition shadow">Logout</button>
-                    </div>`;
-            } else {
-                nav.innerHTML = `<button onclick="switchView('login')" class="btn-gradient-green text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition shadow">Login / Register</button>`;
-            }
-        }
-
-        async function renderApp() {
-            const container = document.getElementById('app-container');
-            renderHeaderNav();
-            container.innerHTML = `<div class="text-center py-20 text-gray-500">Loading...</div>`;
-
-            let contentHtml = '';
-            switch (currentState.view) {
-                case 'login':
-                case 'register':
-                    contentHtml = renderAuthView();
-                    break;
-                case 'portfolio':
-                    await fetchProjects(currentState.portfolioUser);
-                    contentHtml = renderDashboardView();
-                    break;
-                case 'services':
-                    contentHtml = renderServicesView();
-                    break;
-                case 'about':
-                    contentHtml = renderAboutView();
-                    break;
+            // Route to the correct view
+            switch (window.currentState.view) {
                 case 'dashboard':
+                    renderDashboard();
+                    break;
+                case 'project-details':
+                    renderProjectDetails();
+                    break;
+                case 'upload':
+                    renderUpload();
+                    break;
                 default:
-                    if (!currentState.searchQuery) await fetchProjects();
-                    contentHtml = renderDashboardView();
+                    // Default to dashboard if state is invalid
+                    window.currentState.view = 'dashboard';
+                    renderDashboard();
+                    break;
             }
-            container.innerHTML = contentHtml;
-             // Scroll to top on every view change for a better UX
-            window.scrollTo(0, 0);
-        }
+        };
 
-        // --- Application Initialization ---
-        async function init() {
-            await checkAuth();
-            const urlParams = new URLSearchParams(window.location.search);
-            const projectId = urlParams.get('project');
-            if (projectId) await fetchProjectDetail(projectId);
-            renderApp();
-        }
-
-        window.onload = init;
+        // Initial render after setup
+        window.onload = () => {
+             // If firebase init is slow, this ensures the first render happens as soon as the DOM is ready
+             // but the content won't be dynamic until isAuthReady is true.
+             window.renderApp();
+        };
     </script>
+
 </body>
 </html>
