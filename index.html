@@ -9,7 +9,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* A lighter, more modern background */
+            background-color: #f3f4f6; /* Light Gray background */
         }
         .line-clamp-3 {
             overflow: hidden;
@@ -17,19 +17,25 @@
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 3;
         }
-        /* Custom styles for service cards */
-        .service-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-left: 5px solid transparent;
+        /* Animation for the hero image */
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-15px); }
         }
-        .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            border-left-color: #008000; /* Green accent on hover */
+        .animated-bounce {
+            animation: bounce 2s infinite alternate ease-in-out;
+        }
+        /* Custom button gradient */
+        .btn-gradient-green {
+            background-image: linear-gradient(to right, #059669, #10B981);
+        }
+        .btn-gradient-yellow {
+             background-image: linear-gradient(to right, #F59E0B, #FBBF24);
+        }
+        /* Active nav link style */
+        .nav-link-active {
+            color: #FBBF24; /* Bright yellow for active link */
+            border-bottom: 2px solid #FBBF24;
         }
     </style>
 </head>
@@ -38,24 +44,24 @@
     <header class="bg-[#008000] text-white shadow-lg p-4 sticky top-0 z-20">
         <div class="container mx-auto flex justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                 <img src="https://i.imgur.com/r5L43xG.png" alt="GLOEX.ORG Logo" style="height: 40px;">
-                <h1 class="text-2xl font-bold">
-                    <a href="#" onclick="currentState.view='dashboard'; renderApp(); return false;" id="appTitle">gloEx Hub</a>
+                 <img src="https://i.imgur.com/r5L43xG.png" alt="GLOEX.ORG Logo" style="height: 40px; filter: brightness(0) invert(1);">
+                <h1 class="text-2xl font-extrabold tracking-wider">
+                    <a href="#" onclick="currentState.view='dashboard'; renderApp(); return false;" id="appTitle">GLOEX</a>
                 </h1>
             </div>
             
-            <nav class="hidden md:flex items-center space-x-4">
-                 <a href="#" onclick="currentState.view='dashboard'; renderApp(); return false;" class="font-semibold text-white hover:text-yellow-300 transition">Project Hub</a>
-                 <a href="#" onclick="currentState.view='services'; renderApp(); return false;" class="font-semibold text-white hover:text-yellow-300 transition">Our Services</a>
-                 <a href="#" onclick="currentState.view='about'; renderApp(); return false;" class="font-semibold text-white hover:text-yellow-300 transition">About Us</a>
+            <nav class="hidden md:flex items-center space-x-6" id="main-nav">
+                 <a href="#" data-view="dashboard" onclick="switchView('dashboard')" class="font-semibold text-white hover:text-yellow-300 transition pb-1">Project Hub</a>
+                 <a href="#" data-view="services" onclick="switchView('services')" class="font-semibold text-white hover:text-yellow-300 transition pb-1">Our Services</a>
+                 <a href="#" data-view="about" onclick="switchView('about')" class="font-semibold text-white hover:text-yellow-300 transition pb-1">About Us</a>
             </nav>
 
             <div class="flex-grow max-w-lg hidden md:block" id="search-bar-container">
                 <form id="search-form" onsubmit="handleSearch(event)">
                     <div class="relative">
                         <input type="search" name="query" placeholder="Search projects..."
-                               class="w-full p-2 pl-4 pr-10 border border-gray-300 rounded-full bg-gray-50 text-black focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition">
-                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+                               class="w-full p-2 pl-4 pr-10 border-2 border-transparent rounded-full bg-green-900 bg-opacity-50 text-white placeholder-gray-300 focus:ring-2 focus:ring-yellow-400 focus:bg-green-800 transition">
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </button>
                     </div>
@@ -67,42 +73,39 @@
         </div>
     </header>
 
-    <main class="container mx-auto p-4 flex-grow" id="app-container">
+    <main class="flex-grow" id="app-container">
         </main>
     
     <footer class="bg-[#008000] text-white">
         <div class="container mx-auto p-8 text-center">
              <h3 class="text-2xl font-bold text-yellow-300">Ready to Start Your Project?</h3>
-             <p class="mt-2">Contact the ELIJUL GROUPS LTD team today.</p>
-             <div class="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2">
-                <p><strong>Website:</strong> <a href="https://www.gloex.org" class="hover:underline">WWW.GLOEX.ORG</a></p>
-                <p><strong>Email (Web/Software):</strong> <a href="mailto:infogloex@proton.me" class="hover:underline">infogloex@proton.me</a></p>
-                <p><strong>Email (Partnership):</strong> <a href="mailto:info@gloex.org" class="hover:underline">info@gloex.org</a></p>
+             <p class="mt-2 text-green-200">Contact the ELIJUL GROUPS LTD team today.</p>
+             <div class="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-green-100">
+                <p><strong>Website:</strong> <a href="https://www.gloex.org" class="hover:underline hover:text-white">WWW.GLOEX.ORG</a></p>
+                <p><strong>Email (Web/Software):</strong> <a href="mailto:infogloex@proton.me" class="hover:underline hover:text-white">infogloex@proton.me</a></p>
+                <p><strong>Email (Partnership):</strong> <a href="mailto:info@gloex.org" class="hover:underline hover:text-white">info@gloex.org</a></p>
                 <p><strong>Phone/WhatsApp:</strong> +250788660513</p>
              </div>
-             <div class="mt-6 pt-4 border-t border-green-600">
-                <p><strong>Address:</strong> Kigali, Rwanda</p>
+             <div class="mt-6 pt-4 border-t border-green-700">
+                <p class="text-green-200"><strong>Address:</strong> Kigali, Rwanda</p>
                 <p class="mt-2 text-sm text-yellow-200">TWUBAKA-WEB by ELIJUL GROUPS LTD</p>
              </div>
         </div>
     </footer>
     
-    <div id="message-box" class="fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg shadow-xl text-white font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none"></div>
+    <div id="message-box" class="fixed top-5 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-2xl text-white font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none text-base"></div>
     <div id="project-detail-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
         <div id="modal-content" class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             </div>
     </div>
 
-
     <script>
-        // --- Configuration ---
+        // --- Configuration & State ---
         const API_BASE_URL = 'https://gloex.pythonanywhere.com/api';
-        
-        // --- State Management ---
         let currentState = {
             user: null,
             projects: [],
-            view: 'dashboard', // Default to dashboard
+            view: 'dashboard',
             currentProjectDetail: null,
             searchQuery: '',
             portfolioUser: null,
@@ -116,7 +119,7 @@
             { value: 'design', label: 'UI/UX Design' },
             { value: 'other', label: 'Other' },
         ];
-
+        
         // --- Utility Functions ---
         function getCsrfToken() {
             const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
@@ -137,18 +140,13 @@
         async function fetchData(url, options = {}) {
             const defaultHeaders = { 'Content-Type': 'application/json' };
             const config = { credentials: 'include', ...options, headers: { ...defaultHeaders, ...options.headers } };
-
             if (options.method && options.method !== 'GET' && !(options.body instanceof FormData)) {
                 const csrfToken = getCsrfToken();
                 if (csrfToken) config.headers['X-CSRFToken'] = csrfToken;
             }
-            if (options.body instanceof FormData) {
-                delete config.headers['Content-Type'];
-            }
-
+            if (options.body instanceof FormData) delete config.headers['Content-Type'];
             const response = await fetch(url, config);
             const contentType = response.headers.get("content-type");
-
             if (!response.ok) {
                 const errorData = contentType?.includes("application/json") ? await response.json() : { error: `HTTP error! Status: ${response.status}` };
                 if (response.status === 401 || response.status === 403) {
@@ -157,11 +155,19 @@
                 }
                 throw new Error(JSON.stringify(errorData) || `Request failed.`);
             }
-
             return contentType?.includes("application/json") ? response.json() : response;
         }
 
-
+        function switchView(viewName, portfolioUser = null) {
+            currentState.view = viewName;
+            currentState.portfolioUser = portfolioUser;
+            currentState.searchQuery = ''; // Clear search on view switch
+            const searchForm = document.getElementById('search-form');
+            if(searchForm) searchForm.reset();
+            renderApp();
+            return false; // Prevent default anchor behavior
+        }
+        
         // --- API Calls ---
         async function checkAuth() {
             try {
@@ -171,7 +177,7 @@
                 currentState.user = null;
             }
         }
-
+        
         async function fetchProjects(username = null) {
             let url = `${API_BASE_URL}/projects/`;
             if (username) url = `${API_BASE_URL}/portfolio/${username}/`;
@@ -219,8 +225,7 @@
                 const user = await fetchData(`${API_BASE_URL}/${endpoint}/`, { method: 'POST', body: JSON.stringify(data) });
                 currentState.user = user;
                 showMessage(`Welcome, ${user.username}!`, 'success');
-                currentState.view = 'dashboard';
-                renderApp();
+                switchView('dashboard');
             } catch (error) {
                 showMessage(`Authentication failed: ${error.message}`, 'error');
             }
@@ -230,8 +235,7 @@
             await fetchData(`${API_BASE_URL}/logout/`, { method: 'POST' });
             currentState.user = null;
             showMessage('Successfully logged out.', 'info');
-            currentState.view = 'dashboard';
-            renderApp();
+            switchView('dashboard');
         }
 
         async function handlePostProject(event) {
@@ -312,24 +316,50 @@
 
 
         // --- Static Content Rendering ---
-        function renderAboutView() {
+        function renderHeroSection() {
             return `
-            <div class="bg-white rounded-xl shadow-lg p-8 md:p-12">
-                <div class="text-center">
-                    <p class="text-pink-500 font-semibold">DISCOVER GLOEX.ORG</p>
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-gray-800 mt-2">Get Your Website or Software Today!</h2>
-                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">We build robust, affordable, and scalable digital solutions tailored for your business needs, right here in Kigali, Rwanda.</p>
-                    <div class="mt-6 text-2xl font-bold text-blue-600 border-2 border-dashed border-blue-600 inline-block p-4 rounded-lg">
-                        Starting From Just 20,000 RWF
+            <div class="relative bg-green-50 overflow-hidden">
+                <div class="container mx-auto px-4 py-16 md:py-24">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div class="text-center md:text-left">
+                            <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-800 leading-tight">
+                                Build, Share, and Discover<br><span class="text-green-600">Amazing Projects.</span>
+                            </h2>
+                            <p class="mt-4 text-lg text-gray-600 max-w-lg mx-auto md:mx-0">
+                                Welcome to the GLOEX Hub, a community for developers and creators in Rwanda and beyond. Showcase your work, get feedback, and find inspiration.
+                            </p>
+                            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                                <a href="#" onclick="switchView('services')" class="btn-gradient-green text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
+                                    Our Services
+                                </a>
+                                <a href="https://gitlab.com/bizimanasoftware/" target="_blank" class="bg-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
+                                    View GitLab
+                                </a>
+                            </div>
+                        </div>
+                        <div class="flex justify-center items-center">
+                            <img src="https://i.imgur.com/GgS0i5H.png" alt="GLOEX Services Tank" class="animated-bounce max-w-sm md:max-w-md w-full">
+                        </div>
                     </div>
                 </div>
-
+            </div>`;
+        }
+        
+        function renderAboutView() {
+            return `<div class="bg-pink-50 rounded-xl shadow-lg p-8 md:p-12 container mx-auto my-8">
+                <div class="text-center">
+                    <p class="text-pink-500 font-semibold uppercase tracking-wider">Discover GLOEX.ORG</p>
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-gray-800 mt-2">Get Your Digital Solution Today!</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">We build robust, affordable, and scalable digital solutions tailored for your business needs, right here in Kigali, Rwanda.</p>
+                    <div class="mt-6 text-2xl font-bold text-green-600 border-2 border-dashed border-green-400 inline-block p-4 rounded-lg bg-white">
+                        Projects Starting From Just 20,000 RWF
+                    </div>
+                </div>
                 <div class="mt-12 text-center">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">See Our Live Work in Action</h3>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">See Our Live Work in Action</h3>
                     <div class="flex flex-wrap justify-center gap-4">
-                        <a href="https://bizimanasoftware.pythonanywhere.com" target="_blank" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-md">LAUNCH TALENTHUB-DEMO</a>
-                        <a href="https://addproducts.pythonanywhere.com" target="_blank" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-md">LAUNCH E-COMMERCE-DEMO</a>
-                        <a href="https://gitlab.com/bizimanasoftware/" target="_blank" class="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition shadow-md">VIEW GITLAB PROJECTS</a>
+                        <a href="https://bizimanasoftware.pythonanywhere.com" target="_blank" class="btn-gradient-green text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">LAUNCH TALENTHUB-DEMO</a>
+                        <a href="https://addproducts.pythonanywhere.com" target="_blank" class="btn-gradient-green text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300">LAUNCH E-COMMERCE-DEMO</a>
                     </div>
                 </div>
             </div>`;
@@ -337,185 +367,44 @@
         
         function renderServicesView() {
             const services = {
-                "Web, Software & Modern Development": [
-                    { title: "Website Maintenance & Management", desc: "Ensuring your website is secure, fast, and up-to-date. Includes Free Website Management." },
-                    { title: "Custom Web/Mobile Application Development", desc: "Building unique, large-scale software solutions for complex business needs." },
-                    { title: "Advanced API & AI Integration", desc: "Connecting your systems and embedding intelligent features like chatbots and data analysis." },
-                    { title: "Ecommerce Stores & Online Payments", desc: "Creating powerful online shops and integrating secure payment gateways for global transactions." }
-                ],
-                "Business Automation & Financial Systems": [
-                    { title: "Billing, POS & Invoicing Systems", desc: "Streamlining sales, inventory tracking, and client billing for retail and service industries." },
-                    { title: "HR, Payroll & CRM Tools", desc: "Managing your workforce and client relationships efficiently in one centralized system." },
-                    { title: "Stock & Inventory Management Systems", desc: "Keeping track of assets, stock levels, and supply chains in real-time." },
-                    { title: "Ticketing Systems & Customer Support", desc: "Professional systems for managing support queries, help desks, and technical requests." }
-                ],
-                "Cyber Security & Data Solutions": [
-                    { title: "Proactive Cyber Security Support", desc: "Protecting your digital assets from threats with monitoring, patching, and defense strategies." },
-                    { title: "Cloud Infrastructure & Deployment (DevOps)", desc: "Setting up secure, scalable, and high-availability cloud hosting environments." },
-                    { title: "Data Analytics & Business Intelligence", desc: "Turning raw data into actionable insights with custom dashboards and reporting tools." }
-                ],
-                 "Marketing & Branding Services": [
-                    { title: "SEO Services & Digital Marketing", desc: "Optimizing your site to rank higher in search results (Google, Bing)." },
-                    { title: "Logo Branding & Graphic Design", desc: "Creating professional, memorable logos and visual assets for your brand identity." },
-                    { title: "SMS/Email Marketing Campaigns", desc: "Reaching your audience directly with targeted and effective communication strategies." },
-                    { title: "Email Setup & Professional Hosting", desc: "Setting up professional email addresses (e.g., you@yourcompany.com)." }
-                ]
+                "Web & Software Development": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>`, items: ["Website Maintenance & Management", "Custom Web/Mobile Apps", "Advanced API & AI Integration", "Ecommerce & Online Payments"] },
+                "Business & Financial Systems": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`, items: ["Billing, POS & Invoicing Systems", "HR, Payroll & CRM Tools", "Stock & Inventory Management", "Ticketing & Customer Support"] },
+                "Cyber Security & Data": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`, items: ["Proactive Cyber Security Support", "Cloud & DevOps Infrastructure", "Data Analytics & BI Dashboards"] },
+                "Marketing & Branding": { icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.354A1.76 1.76 0 016.5 12H6a1.76 1.76 0 00-1.76 1.76l.006.007a1.76 1.76 0 01-3.417-.592l-.006-.007A1.76 1.76 0 011 12h-.5a1.76 1.76 0 01-1.47-2.828l2.148-6.354A1.76 1.76 0 013.5 2H4a1.76 1.76 0 011.76 1.76l-.006.007a1.76 1.76 0 003.417.592l.006-.007A1.76 1.76 0 0110 2h.5a1.76 1.76 0 011.47 2.828l-2.148 6.354A1.76 1.76 0 008.5 12H8a1.76 1.76 0 001.76-1.76l-.006-.007a1.76 1.76 0 013.417.592l.006.007A1.76 1.76 0 0014 12h.5a1.76 1.76 0 001.47-2.828l-2.148-6.354A1.76 1.76 0 0112.5 2H12a1.76 1.76 0 00-1.76 1.76l.006.007a1.76 1.76 0 01-3.417-.592L6.828 2.828A1.76 1.76 0 018.5 2H9a1.76 1.76 0 011.76 1.76L11 5.882z" /></svg>`, items: ["SEO & Digital Marketing", "Logo Branding & Graphic Design", "SMS/Email Marketing Campaigns", "Professional Email Hosting"] }
             };
-            
-            let html = `<div class="bg-white rounded-xl shadow-lg p-8">
-                <h2 class="text-center text-4xl font-extrabold text-gray-800 mb-8 border-b-4 border-pink-500 pb-4">What We Offer</h2>`;
-
+            let html = `<div class="bg-blue-50 rounded-xl shadow-lg p-8 md:p-12 container mx-auto my-8">
+                <h2 class="text-center text-4xl font-extrabold text-gray-800 mb-2">Our Digital Services</h2>
+                <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">We offer a complete suite of services to build, launch, and grow your digital presence.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">`;
             for (const category in services) {
-                html += `
-                <div class="mb-12">
-                    <h3 class="text-2xl font-bold text-blue-700 mb-6">${category}</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        ${services[category].map(service => `
-                            <div class="service-card">
-                                <strong class="text-lg font-semibold text-gray-900">${service.title}</strong>
-                                <p class="text-gray-600 text-sm mt-1">${service.desc}</p>
-                            </div>
-                        `).join('')}
+                html += `<div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                    <div class="flex items-center gap-4 mb-4">
+                        ${services[category].icon}
+                        <h3 class="text-xl font-bold text-gray-800">${category}</h3>
                     </div>
+                    <ul class="space-y-2">
+                        ${services[category].items.map(item => `
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                <span class="text-gray-600">${item}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
                 </div>`;
             }
-
-            html += `</div>`;
+            html += `</div></div>`;
             return html;
         }
 
-
         // --- Dynamic Component Rendering ---
-        function renderAuthView() {
-            return `
-                <div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-2xl">
-                    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Access Project Hub</h2>
-                    <div class="flex border border-gray-200 rounded-lg p-1 mb-6">
-                        <button onclick="currentState.view='login'; renderApp()" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'login' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Login</button>
-                        <button onclick="currentState.view='register'; renderApp()" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'register' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Register</button>
-                    </div>
-                    ${currentState.view === 'login' ? renderLoginForm() : renderRegisterForm()}
-                </div>`;
-        }
-        function renderLoginForm() {
-             return `<form onsubmit="handleAuthForm(event, 'login')">
-                    <div class="mb-4"><label for="u_login" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_login" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                    <div class="mb-5"><label for="p_login" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_login" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                    <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition shadow">Sign In</button>
-                </form>`;
-        }
-        function renderRegisterForm() {
-             return `<form onsubmit="handleAuthForm(event, 'register')">
-                    <div class="mb-4"><label for="u_reg" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_reg" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                    <div class="mb-4"><label for="e_reg" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="e_reg" name="email" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                    <div class="mb-5"><label for="p_reg" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_reg" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                    <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition shadow">Create Account</button>
-                </form>`;
-        }
-
-        function renderPostForm() {
-            if (!currentState.user) return '';
-            return `
-                <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
-                    <h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Share Your Project</h3>
-                    <form onsubmit="handlePostProject(event)" enctype="multipart/form-data">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-4">
-                                <div><label for="title" class="text-sm font-medium text-gray-700">Project Title *</label><input type="text" name="title" required class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                                <div><label for="project_url" class="text-sm font-medium text-gray-700">Demo/Primary Link *</label><input type="url" name="project_url" required placeholder="https://" class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                                <div><label for="project_type" class="text-sm font-medium text-gray-700">Category</label><select name="project_type" class="mt-1 w-full p-2 border bg-white rounded-lg focus:ring-yellow-500 focus:border-yellow-500">${PROJECT_TYPE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}</select></div>
-                                <div><label for="description" class="text-sm font-medium text-gray-700">Description</label><textarea name="description" rows="5" placeholder="Briefly describe your project..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea></div>
-                            </div>
-                            <div class="space-y-4">
-                                <div><label for="screenshot" class="text-sm font-medium text-gray-700">Screenshot (Upload)</label><input type="file" name="screenshot" accept="image/*" class="mt-1 text-sm w-full border rounded-lg p-2"></div>
-                                <div><label for="screenshot_url_fallback" class="text-sm font-medium text-gray-700">OR Image Link (Fallback)</label><input type="url" name="screenshot_url_fallback" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                                <div><label for="source_code_url" class="text-sm font-medium text-gray-700">Source Code Link (e.g., GitHub)</label><input type="url" name="source_code_url" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                                <div class="grid grid-cols-2 gap-2"><label class="col-span-2 text-sm font-medium text-gray-700">Optional Custom Field</label><input type="text" name="custom_field_name" placeholder="Label (e.g., Tech Stack)" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"><input type="text" name="custom_field_value" placeholder="Value (e.g., React, Django)" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
-                                <div class="flex items-center pt-4"><input name="is_public" type="checkbox" checked class="h-4 w-4 text-green-600 rounded"><label for="is_public" class="ml-2 text-sm text-gray-700">Make this post public</label></div>
-                            </div>
-                        </div>
-                        <button type="submit" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-lg">Submit Project</button>
-                    </form>
-                </div>`;
-        }
-
-        function renderProjectCard(project) {
-            const imageUrl = project.screenshot_url || 'https://via.placeholder.com/400x250?text=No+Image';
-            return `
-                <div class="bg-white rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col cursor-pointer" onclick="fetchProjectDetail(${project.id})">
-                    <img src="${imageUrl}" alt="${project.title} screenshot" class="w-full h-48 object-cover rounded-t-xl">
-                    <div class="p-4 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-2"><h4 class="text-xl font-bold text-gray-800 pr-2">${project.title}</h4><span class="text-xs font-semibold text-blue-800 bg-blue-100 px-2 py-1 rounded-full whitespace-nowrap">${project.project_type}</span></div>
-                        <p class="text-gray-600 mb-3 text-sm flex-grow line-clamp-3">${project.description || 'No description provided.'}</p>
-                        <div class="flex justify-between items-center text-sm text-gray-500 pt-2 border-t mt-auto">
-                            <p>By: <a href="#" onclick="event.stopPropagation(); currentState.view='portfolio'; currentState.portfolioUser='${project.username}'; renderApp()" class="font-medium text-green-700 hover:underline">${project.username}</a></p>
-                            <button onclick="event.stopPropagation(); handleLikeToggle(${project.id})" class="flex items-center font-bold ${project.user_has_liked ? 'text-red-500' : 'text-gray-400'} hover:text-red-500 transition"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>${project.likes_count}</button>
-                        </div>
-                    </div>
-                </div>`;
-        }
+        function renderAuthView() { return `<div class="container mx-auto my-8"><div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-2xl"><h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Access Project Hub</h2><div class="flex border border-gray-200 rounded-lg p-1 mb-6"><button onclick="switchView('login')" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'login' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Login</button><button onclick="switchView('register')" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'register' ? 'bg-green-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Register</button></div>${currentState.view === 'login' ? renderLoginForm() : renderRegisterForm()}</div></div>`; }
+        function renderLoginForm() { return `<form onsubmit="handleAuthForm(event, 'login')"><div class="mb-4"><label for="u_login" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_login" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="mb-5"><label for="p_login" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_login" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><button type="submit" class="w-full btn-gradient-green text-white p-3 rounded-lg font-semibold hover:opacity-90 transition shadow">Sign In</button></form>`; }
+        function renderRegisterForm() { return `<form onsubmit="handleAuthForm(event, 'register')"><div class="mb-4"><label for="u_reg" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_reg" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="mb-4"><label for="e_reg" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="e_reg" name="email" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="mb-5"><label for="p_reg" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_reg" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><button type="submit" class="w-full btn-gradient-green text-white p-3 rounded-lg font-semibold hover:opacity-90 transition shadow">Create Account</button></form>`; }
+        function renderPostForm() { if (!currentState.user) return ''; return `<div class="p-6 bg-white rounded-xl shadow-lg mb-8"><h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Share Your Project</h3><form onsubmit="handlePostProject(event)" enctype="multipart/form-data"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="space-y-4"><div><label for="title" class="text-sm font-medium text-gray-700">Project Title *</label><input type="text" name="title" required class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div><label for="project_url" class="text-sm font-medium text-gray-700">Demo/Primary Link *</label><input type="url" name="project_url" required placeholder="https://" class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div><label for="project_type" class="text-sm font-medium text-gray-700">Category</label><select name="project_type" class="mt-1 w-full p-2 border bg-white rounded-lg focus:ring-yellow-500 focus:border-yellow-500">${PROJECT_TYPE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}</select></div><div><label for="description" class="text-sm font-medium text-gray-700">Description</label><textarea name="description" rows="5" placeholder="Briefly describe your project..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea></div></div><div class="space-y-4"><div><label for="screenshot" class="text-sm font-medium text-gray-700">Screenshot (Upload)</label><input type="file" name="screenshot" accept="image/*" class="mt-1 text-sm w-full border rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"></div><div><label for="screenshot_url_fallback" class="text-sm font-medium text-gray-700">OR Image Link (Fallback)</label><input type="url" name="screenshot_url_fallback" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div><label for="source_code_url" class="text-sm font-medium text-gray-700">Source Code Link</label><input type="url" name="source_code_url" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="grid grid-cols-2 gap-2"><label class="col-span-2 text-sm font-medium text-gray-700">Optional Custom Field</label><input type="text" name="custom_field_name" placeholder="Label" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"><input type="text" name="custom_field_value" placeholder="Value" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div><div class="flex items-center pt-4"><input name="is_public" type="checkbox" checked class="h-4 w-4 text-green-600 rounded focus:ring-green-500"><label for="is_public" class="ml-2 text-sm text-gray-700">Make this post public</label></div></div></div><button type="submit" class="mt-6 w-full btn-gradient-green text-white p-3 rounded-lg font-semibold hover:opacity-90 transition shadow-lg">Submit Project</button></form></div>`; }
+        function renderProjectCard(project) { const imageUrl = project.screenshot_url || 'https://via.placeholder.com/400x250?text=No+Image'; return `<div class="bg-white rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col cursor-pointer" onclick="fetchProjectDetail(${project.id})"><img src="${imageUrl}" alt="${project.title} screenshot" class="w-full h-48 object-cover rounded-t-xl"><div class="p-4 flex flex-col flex-grow"><div class="flex justify-between items-start mb-2"><h4 class="text-xl font-bold text-gray-800 pr-2">${project.title}</h4><span class="text-xs font-semibold text-blue-800 bg-blue-100 px-2 py-1 rounded-full whitespace-nowrap">${project.project_type}</span></div><p class="text-gray-600 mb-3 text-sm flex-grow line-clamp-3">${project.description || 'No description provided.'}</p><div class="flex justify-between items-center text-sm text-gray-500 pt-2 border-t mt-auto"><p>By: <a href="#" onclick="event.stopPropagation(); switchView('portfolio', '${project.username}')" class="font-medium text-green-700 hover:underline">${project.username}</a></p><button onclick="event.stopPropagation(); handleLikeToggle(${project.id})" class="flex items-center font-bold ${project.user_has_liked ? 'text-red-500' : 'text-gray-400'} hover:text-red-500 transition"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>${project.likes_count}</button></div></div></div>`; }
+        function renderProjectDetailModal() { const modal = document.getElementById('project-detail-modal'); const content = document.getElementById('modal-content'); const p = currentState.currentProjectDetail; if (!p) { closeProjectDetailModal(); return; } const isOwner = currentState.user?.id === p.user_id; const ownerButtons = isOwner ? `<button onclick="handleDeleteProject(${p.id})" class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200">Delete Project</button>` : ''; const shareButton = `<button onclick="navigator.clipboard.writeText(window.location.origin + '?project=${p.id}'); showMessage('Link copied to clipboard!', 'info')" class="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200">Share</button>`; const sourceCodeButton = p.source_code_url ? `<a href="${p.source_code_url}" target="_blank" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">View Source Code</a>` : ''; const customFieldHtml = (p.custom_field_name && p.custom_field_value) ? `<h4 class="text-lg font-semibold text-gray-800 mt-6 mb-1">${p.custom_field_name}</h4><p class="text-gray-600 whitespace-pre-wrap">${p.custom_field_value}</p>` : ''; const commentsHtml = p.comments?.length > 0 ? p.comments.map(c => `<div class="border-b last:border-b-0 py-3"><div class="flex justify-between items-start"><div><p class="font-semibold text-gray-800">${c.username}</p><p class="text-gray-600 text-sm">${c.content}</p></div>${(isOwner || currentState.user?.id === c.user_id) ? `<button onclick="handleDeleteComment(${p.id}, ${c.id})" class="text-red-500 hover:text-red-700 text-xs p-1">&times;</button>` : ''}</div><span class="text-xs text-gray-400 mt-1">${new Date(c.created_at).toLocaleString()}</span></div>`).join('') : `<p class="text-gray-500 text-sm">No comments yet. Be the first!</p>`; content.innerHTML = `<div class="p-6 relative"><button class="absolute top-4 right-4 text-gray-500 hover:text-black" onclick="closeProjectDetailModal()"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="grid grid-cols-1 lg:grid-cols-5 gap-8"><div class="lg:col-span-3"><h2 class="text-3xl font-extrabold text-black mb-1">${p.title}</h2><p class="text-sm font-medium text-green-700 mb-4">${p.project_type} by <a href="#" onclick="event.stopPropagation(); closeProjectDetailModal(); switchView('portfolio', '${p.username}')" class="font-semibold hover:underline">${p.username}</a></p><img src="${p.screenshot_url || 'https://via.placeholder.com/800x500?text=No+Screenshot'}" alt="${p.title}" class="w-full h-auto rounded-lg shadow-xl mb-6"><div class="flex items-center justify-between gap-4 border-t border-b py-3 mb-6"><div class="flex items-center gap-2"><button onclick="handleLikeToggle(${p.id})" class="flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition ${p.user_has_liked ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">${p.likes_count} ${p.user_has_liked ? 'Unlike' : 'Like'}</button><a href="${p.project_url}" target="_blank" class="btn-gradient-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition">View Live Demo</a>${sourceCodeButton}</div><div class="flex items-center gap-2">${shareButton} ${ownerButtons}</div></div><h3 class="text-xl font-semibold text-gray-800 mb-2">Description</h3><p class="text-gray-600 mb-6 whitespace-pre-wrap">${p.description || 'No description provided.'}</p>${customFieldHtml}</div><div class="lg:col-span-2 border-t lg:border-t-0 lg:border-l lg:pl-6"><h3 class="text-2xl font-bold text-gray-800 mb-4">Comments (${p.comments.length})</h3>${currentState.user ? `<form onsubmit="handlePostComment(event, ${p.id})" class="mb-6"><textarea name="comment_content" rows="3" required placeholder="Add a comment..." class="w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea><button type="submit" class="mt-2 w-full btn-gradient-green text-white p-2 rounded-lg text-sm font-semibold hover:opacity-90">Post Comment</button></form>` : `<p class="text-sm text-red-500 mb-4">Log in to post a comment.</p>`}<div class="max-h-[50vh] overflow-y-auto space-y-2 pr-2">${commentsHtml}</div></div></div></div>`; modal.classList.remove('hidden'); modal.classList.add('flex'); }
+        function closeProjectDetailModal() { document.getElementById('project-detail-modal').classList.add('hidden'); document.getElementById('project-detail-modal').classList.remove('flex'); currentState.currentProjectDetail = null; if (window.history.pushState) { const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname; window.history.pushState({ path: newURL }, '', newURL); } }
         
-        function renderProjectDetailModal() {
-            const modal = document.getElementById('project-detail-modal');
-            const content = document.getElementById('modal-content');
-            const p = currentState.currentProjectDetail;
-            if (!p) { closeProjectDetailModal(); return; }
-
-            const isOwner = currentState.user?.id === p.user_id;
-            const ownerButtons = isOwner ? `<button onclick="handleDeleteProject(${p.id})" class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200">Delete Project</button>` : '';
-            const shareButton = `<button onclick="navigator.clipboard.writeText(window.location.origin + '?project=${p.id}'); showMessage('Link copied to clipboard!', 'info')" class="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200">Share</button>`;
-            const sourceCodeButton = p.source_code_url ? `<a href="${p.source_code_url}" target="_blank" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">View Source Code</a>` : '';
-            const customFieldHtml = (p.custom_field_name && p.custom_field_value) ? `<h4 class="text-lg font-semibold text-gray-800 mt-6 mb-1">${p.custom_field_name}</h4><p class="text-gray-600 whitespace-pre-wrap">${p.custom_field_value}</p>` : '';
-            const commentsHtml = p.comments?.length > 0 ? p.comments.map(c => `
-                <div class="border-b last:border-b-0 py-3">
-                    <div class="flex justify-between items-start">
-                        <div><p class="font-semibold text-gray-800">${c.username}</p><p class="text-gray-600 text-sm">${c.content}</p></div>
-                        ${(isOwner || currentState.user?.id === c.user_id) ? `<button onclick="handleDeleteComment(${p.id}, ${c.id})" class="text-red-500 hover:text-red-700 text-xs p-1">&times;</button>` : ''}
-                    </div>
-                    <span class="text-xs text-gray-400 mt-1">${new Date(c.created_at).toLocaleString()}</span>
-                </div>`).join('') : `<p class="text-gray-500 text-sm">No comments yet. Be the first!</p>`;
-
-            content.innerHTML = `
-                <div class="p-6 relative">
-                    <button class="absolute top-4 right-4 text-gray-500 hover:text-black" onclick="closeProjectDetailModal()"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                        <div class="lg:col-span-3">
-                            <h2 class="text-3xl font-extrabold text-black mb-1">${p.title}</h2>
-                            <p class="text-sm font-medium text-green-700 mb-4">${p.project_type} by <a href="#" onclick="event.stopPropagation(); closeProjectDetailModal(); currentState.view='portfolio'; currentState.portfolioUser='${p.username}'; renderApp()" class="font-semibold hover:underline">${p.username}</a></p>
-                            <img src="${p.screenshot_url || 'https://via.placeholder.com/800x500?text=No+Screenshot'}" alt="${p.title}" class="w-full h-auto rounded-lg shadow-xl mb-6">
-                            <div class="flex items-center justify-between gap-4 border-t border-b py-3 mb-6">
-                                <div class="flex items-center gap-2">
-                                    <button onclick="handleLikeToggle(${p.id})" class="flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition ${p.user_has_liked ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">${p.likes_count} ${p.user_has_liked ? 'Unlike' : 'Like'}</button>
-                                    <a href="${p.project_url}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition">View Live Demo</a>
-                                    ${sourceCodeButton}
-                                </div>
-                                <div class="flex items-center gap-2">${shareButton} ${ownerButtons}</div>
-                            </div>
-                            <h3 class="text-xl font-semibold text-gray-800 mb-2">Description</h3>
-                            <p class="text-gray-600 mb-6 whitespace-pre-wrap">${p.description || 'No description provided.'}</p>
-                            ${customFieldHtml}
-                        </div>
-                        <div class="lg:col-span-2 border-t lg:border-t-0 lg:border-l lg:pl-6">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Comments (${p.comments.length})</h3>
-                            ${currentState.user ? `<form onsubmit="handlePostComment(event, ${p.id})" class="mb-6"><textarea name="comment_content" rows="3" required placeholder="Add a comment..." class="w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea><button type="submit" class="mt-2 w-full bg-green-600 text-white p-2 rounded-lg text-sm font-semibold hover:bg-green-700">Post Comment</button></form>` : `<p class="text-sm text-red-500 mb-4">Log in to post a comment.</p>`}
-                            <div class="max-h-[50vh] overflow-y-auto space-y-2 pr-2">${commentsHtml}</div>
-                        </div>
-                    </div>
-                </div>`;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-        
-        function closeProjectDetailModal() {
-            document.getElementById('project-detail-modal').classList.add('hidden');
-            document.getElementById('project-detail-modal').classList.remove('flex');
-            currentState.currentProjectDetail = null;
-            if (window.history.pushState) {
-                const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
-                window.history.pushState({ path: newURL }, '', newURL);
-            }
-        }
-
         function renderDashboardView() {
             const isPortfolio = currentState.view === 'portfolio';
             const isSearch = !!currentState.searchQuery;
@@ -526,9 +415,10 @@
             const projectsHtml = currentState.projects.length > 0
                 ? currentState.projects.map(renderProjectCard).join('')
                 : `<p class="col-span-full text-center text-gray-500 py-10">No projects found.</p>`;
-
+            
             return `
-                <div>
+                ${!isPortfolio && !isSearch ? renderHeroSection() : ''}
+                <div class="container mx-auto px-4 py-8">
                     ${!isPortfolio ? renderPostForm() : ''}
                     <h2 class="text-3xl font-bold text-gray-800 mb-6 mt-8 border-b pb-3">${title}</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -546,14 +436,21 @@
                 searchContainer.classList.add('hidden');
             }
 
+            // Update active nav link style
+            document.querySelectorAll('#main-nav a').forEach(link => {
+                link.classList.remove('nav-link-active');
+                if (link.getAttribute('data-view') === currentState.view) {
+                    link.classList.add('nav-link-active');
+                }
+            });
+
             if (currentState.user) {
-                nav.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <button onclick="currentState.view='portfolio'; currentState.portfolioUser='${currentState.user.username}'; renderApp()" class="text-sm font-semibold text-white hover:text-yellow-300">My Portfolio</button>
-                        <button onclick="handleLogout()" class="bg-yellow-400 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-500 transition shadow">Logout</button>
+                nav.innerHTML = `<div class="flex items-center space-x-3">
+                        <button onclick="switchView('portfolio', '${currentState.user.username}')" class="text-sm font-semibold text-white hover:text-yellow-300">My Portfolio</button>
+                        <button onclick="handleLogout()" class="btn-gradient-yellow text-black px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition shadow">Logout</button>
                     </div>`;
             } else {
-                nav.innerHTML = `<button onclick="currentState.view='login'; renderApp()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition shadow">Login / Register</button>`;
+                nav.innerHTML = `<button onclick="switchView('login')" class="btn-gradient-green text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition shadow">Login / Register</button>`;
             }
         }
 
@@ -562,26 +459,30 @@
             renderHeaderNav();
             container.innerHTML = `<div class="text-center py-20 text-gray-500">Loading...</div>`;
 
+            let contentHtml = '';
             switch (currentState.view) {
                 case 'login':
                 case 'register':
-                    container.innerHTML = renderAuthView();
+                    contentHtml = renderAuthView();
                     break;
                 case 'portfolio':
                     await fetchProjects(currentState.portfolioUser);
-                    container.innerHTML = renderDashboardView();
+                    contentHtml = renderDashboardView();
                     break;
                 case 'services':
-                    container.innerHTML = renderServicesView();
+                    contentHtml = renderServicesView();
                     break;
                 case 'about':
-                    container.innerHTML = renderAboutView();
+                    contentHtml = renderAboutView();
                     break;
                 case 'dashboard':
                 default:
                     if (!currentState.searchQuery) await fetchProjects();
-                    container.innerHTML = renderDashboardView();
+                    contentHtml = renderDashboardView();
             }
+            container.innerHTML = contentHtml;
+             // Scroll to top on view change
+            window.scrollTo(0, 0);
         }
 
         // --- Initialization ---
@@ -589,11 +490,7 @@
             await checkAuth();
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get('project');
-            
-            if (projectId) {
-                await fetchProjectDetail(projectId);
-            }
-            
+            if (projectId) await fetchProjectDetail(projectId);
             renderApp();
         }
 
