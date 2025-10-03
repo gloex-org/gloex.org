@@ -3,790 +3,1025 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>gloEx Hub - Projects, Services & About Us</title>
-    <!-- Load Tailwind CSS -->
+    <title>gloEx Project Hub - Share Your Demos</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Set Inter Font as default -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Load Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, query, onSnapshot, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // --- Global Firebase and Application Variables ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        // Ensure config is parsed safely or set to null if undefined
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        setLogLevel('error'); 
-        
-        let app = null;
-        let db = null;
-        let auth = null;
-        let userId = null;
-
-        // Placeholder Project Data (Used if Firebase is loading or unavailable)
-        const mockProjects = [
-            { id: 'p1', title: 'AI-Powered Stock Predictor', description: 'A Python-based machine learning model using LSTM networks to forecast stock market trends. Includes a web interface for real-time data.', image: 'https://placehold.co/400x250/0ea5e9/ffffff?text=AI+Model', tags: ['AI', 'Python', 'Finance'], author: 'Jane Doe', views: 1200, demoUrl: 'https://github.com/gloex-ai-finance' },
-            { id: 'p2', title: 'Modern React E-commerce UI', description: 'A sleek, responsive e-commerce front-end built with React and Tailwind CSS, focusing on mobile-first design and accessibility. Integrates dummy payment API.', image: 'https://placehold.co/400x250/ec4899/ffffff?text=React+UI', tags: ['React', 'WebDev', 'Frontend'], author: 'John Smith', views: 850, demoUrl: 'https://github.com/gloex-react-shop' },
-            { id: 'p3', title: 'Open Source IoT Dashboard', description: 'Real-time data visualization dashboard for home automation sensors using Node.js and D3.js. Easily extendable architecture for new sensors.', image: 'https://placehold.co/400x250/22c55e/000000?text=IoT+Dashboard', tags: ['IoT', 'Node.js', 'DataViz'], author: 'Alice Brown', views: 420, demoUrl: 'https://github.com/gloex-iot-dash' },
-        ];
-
-        // --- Application State Management ---
-        window.currentState = {
-            view: 'dashboard', // 'dashboard', 'project-details', 'upload', 'ourservices', 'aboutus'
-            selectedProjectId: null,
-            projects: mockProjects, // Start with mock data immediately
-            isAuthReady: false,
-            searchText: ''
-        };
-        
-        // --- Firebase Initialization and Authentication ---
-        const initFirebase = async () => {
-            if (!firebaseConfig) {
-                console.warn("Firebase config is missing. App is running in mock data mode.");
-                // Set ready but don't attempt sign-in/listeners if no config
-                window.currentState.isAuthReady = true; 
-                window.renderApp(); 
-                return;
-            }
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    userId = user?.uid || crypto.randomUUID();
-                    window.currentState.isAuthReady = true;
-                    console.log("Firebase Auth Ready. User ID:", userId);
-                    startProjectListener();
-                    window.renderApp(); // Final render after real data is fetched
-                });
-
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                window.currentState.isAuthReady = true; // Still set ready to exit loading screen
-                window.renderApp();
-            }
-        };
-
-        // --- Firestore Data Management ---
-        const getProjectsCollectionRef = () => {
-            return collection(db, `artifacts/${appId}/public/data/projects`);
-        };
-
-        const startProjectListener = () => {
-             if (!db) { return; }
-
-             const q = query(getProjectsCollectionRef());
-
-             onSnapshot(q, (snapshot) => {
-                const projects = [];
-                snapshot.forEach((doc) => {
-                    projects.push({ id: doc.id, ...doc.data() });
-                });
-                projects.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                
-                if (projects.length > 0) {
-                     // Replace mock data with real data if available
-                     window.currentState.projects = projects;
-                }
-                
-                window.renderApp();
-             }, (error) => {
-                 console.error("Error listening to projects:", error);
-             });
-        };
-
-        window.submitNewProject = async (projectData) => {
-            if (!db) { 
-                console.error("Database not initialized. Cannot submit.");
-                showMessage("Submission failed: Database not ready.", 'error'); 
-                return; 
-            }
-            try {
-                const newProject = {
-                    ...projectData,
-                    authorId: userId,
-                    createdAt: serverTimestamp()
-                };
-                await addDoc(getProjectsCollectionRef(), newProject);
-                window.currentState.view = 'dashboard';
-                window.renderApp();
-                showMessage("Success! Your project has been submitted.", 'success');
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                showMessage("Submission failed. Check console for details.", 'error');
-            }
-        };
-        
-        initFirebase();
-    </script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Base Styles and Emerald Green Theme */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7; 
-            color: #1f2937;
+            background-color: #008000; /* Light gray background */
         }
-
-        /* Green Button Styles */
-        .green-button {
-            background-color: #059669; /* Emerald 600 */
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .green-button:hover {
-            background-color: #047857; /* Emerald 700 */
-            transform: translateY(-1px);
-            box-shadow: 0 8px 10px -3px rgba(0, 0, 0, 0.15);
-        }
-        
-        /* Outline Button (More Real CTA) */
-        .outline-button {
-            border: 2px solid #059669;
-            color: #059669;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .outline-button:hover {
-            background-color: #ecfdf5; /* Emerald 50 */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Custom Wave Animation for Hero Section */
-        .wave-animation {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
-        }
-        .wave {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 40%;
-            opacity: 0.3;
-        }
-        .wave-1 {
-            background: #38bdf8; /* Sky Blue */
-            animation: wave-motion 15s linear infinite;
-        }
-        .wave-2 {
-            background: #f472b6; /* Rose Pink */
-            animation: wave-motion 20s linear infinite reverse;
-        }
-        @keyframes wave-motion {
-            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1.0); }
-            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }
-            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1.0); }
-        }
-
-        /* Utility for line clamping */
+        /* Simple line clamp utility */
         .line-clamp-3 {
             overflow: hidden;
             display: -webkit-box;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 3;
         }
-
-        /* Responsive Navbar link hover effect */
-        .nav-link {
-            transition: color 0.2s, background-color 0.2s;
-        }
-        .nav-link:hover {
-            color: #047857;
-            background-color: #d1fae5;
-        }
-        .nav-link.active {
-            color: #047857;
-            border-bottom: 2px solid #047857;
-            font-weight: 600;
-        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col" background-color: "#008000">
 
-    <!-- Message Box Placeholder -->
-    <div id="messageBox" class="fixed top-4 right-4 z-50 transition-opacity duration-300"></div>
-
-    <!-- HEADER (Green Focus) -->
-    <header class="bg-white shadow-lg p-4 sticky top-0 z-20">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            
-            <!-- Logo (Text-based with color accents - always works) -->
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-wider">
-                <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="appTitle" class="transition duration-300 hover:text-emerald-600">
-                    <span class="text-emerald-600 animate-pulse">G</span>loEx <span class="text-sky-500">H</span>ub
-                </a>
+    <header class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center gap-4">
+            <h1 class="text-2xl font-bold text-gray-800">
+                <a href="#" onclick="currentState.view='dashboard'; renderApp(); return false;" id="appTitle">gloEx Hub</a>
             </h1>
             
-            <!-- Main Navigation Links -->
-            <nav class="flex flex-wrap justify-center space-x-2 sm:space-x-4 text-gray-600 font-medium">
-                <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" id="nav-dashboard"
-                   class="nav-link p-2 rounded-lg text-sm md:text-base">
-                    Project Hubs
-                </a>
-                <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" id="nav-ourservices"
-                   class="nav-link p-2 rounded-lg text-sm md:text-base">
-                    Our Services
-                </a>
-                <a href="#" onclick="window.currentState.view='aboutus'; window.renderApp(); return false;" id="nav-aboutus"
-                   class="nav-link p-2 rounded-lg text-sm md:text-base">
-                    About Us
-                </a>
-                <a href="#" onclick="window.currentState.view='upload'; window.renderApp(); return false;" id="nav-upload"
-                   class="green-button text-sm px-3 py-2 hover:bg-emerald-700 shadow-md transition duration-300">
-                    Upload Demo
-                </a>
-            </nav>
+            <div class="flex-grow max-w-lg">
+                <form id="search-form" onsubmit="handleSearch(event)">
+                    <div class="relative">
+                        <input type="search" name="query" placeholder="Search projects by title, keyword, or user..."
+                               class="w-full p-2 pl-4 pr-10 border border-gray-300 rounded-full bg-gray-50 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition">
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <nav id="nav-actions">
+                </nav>
         </div>
     </header>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main id="appContainer" class="flex-grow"></main>
-
-    <!-- FOOTER -->
-    <footer class="bg-emerald-800 text-white p-8 mt-auto shadow-inner">
-        <div class="container mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            
-            <!-- Section 1: Contact Info -->
-            <div>
-                <h3 class="text-xl font-bold mb-3 text-emerald-200">Ready to Start Your Project?</h3>
-                <p class="text-sm mb-4">Contact the ELIJUL GROUPS LTD team today.</p>
-                
-                <p class="mb-1 text-sm">
-                    <span class="font-semibold text-emerald-300">Website:</span> 
-                    <a href="https://www.gloex.org" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">WWW.GLOEX.ORG</a>
-                </p>
-                <p class="mb-1 text-sm">
-                    <span class="font-semibold text-emerald-300">Email (Web/Software):</span> 
-                    <a href="mailto:infogloex@proton.me" class="text-emerald-100 hover:text-white transition duration-200">infogloex@proton.me</a>
-                </p>
-                <p class="mb-1 text-sm">
-                    <span class="font-semibold text-emerald-300">Email (Partnership):</span> 
-                    <a href="mailto:info@gloex.org" class="text-emerald-100 hover:text-white transition duration-200">info@gloex.org</a>
-                </p>
-                <p class="mb-1 text-sm">
-                    <span class="font-semibold text-emerald-300">Phone/WhatsApp:</span> +250 788 660 513
-                </p>
+    <main class="container mx-auto p-4 flex-grow" id="app-container">
+        </main>
+    
+    <div id="message-box" class="fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg shadow-xl text-white font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none"></div>
+    <div id="project-detail-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+        <div id="modal-content" class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             </div>
+    </div>
 
-            <!-- Section 2: Quick Links -->
-            <div>
-                <h3 class="text-xl font-bold mb-3 text-emerald-200">Quick Links</h3>
-                <ul class="space-y-2 text-sm">
-                    <li><a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">Project Hubs</a></li>
-                    <li><a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">Our Services</a></li>
-                    <li><a href="#" onclick="window.currentState.view='aboutus'; window.renderApp(); return false;" class="text-emerald-100 hover:text-white transition duration-200">About ELIJUL GROUPS</a></li>
-                    <li><a href="https://www.gloex.org/privacy" target="_blank" class="text-emerald-100 hover:text-white transition duration-200">Privacy Policy</a></li>
-                </ul>
-            </div>
 
-            <!-- Section 3: Free Project Resources -->
-            <div>
-                <h3 class="text-xl font-bold mb-3 text-emerald-200">Free Project Resources</h3>
-                <ul class="space-y-2 text-sm">
-                    <li>
-                        <a href="https://github.com/gloex-web-demos" target="_blank" class="inline-flex items-center text-emerald-100 hover:text-white transition duration-200">
-                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20a10 10 0 110-20 10 10 0 010 20zm0-16v12m0 0l-4-4m4 4l4-4"/></svg>
-                            Explore Web Demos (GitHub)
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/gloex-data-templates" target="_blank" class="inline-flex items-center text-emerald-100 hover:text-white transition duration-200">
-                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                            Data & ML Templates
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" onclick="window.currentState.view='upload'; window.renderApp(); return false;" class="inline-flex items-center text-emerald-100 hover:text-white transition duration-200">
-                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            Submit Your Open Project
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Section 4: Call to Action -->
-             <div class="text-center md:text-left">
-                <h3 class="text-xl font-bold mb-3 text-emerald-200">Start a Custom Project</h3>
-                <p class="mb-4 text-sm">Need a unique solution? Request a consultation for full-stack development.</p>
-                <a href="mailto:info@gloex.org" class="green-button font-bold py-3 px-6 rounded-lg hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-300 w-full md:w-auto transition duration-300 shadow-xl">
-                    EMAIL US NOW
-                </a>
-            </div>
-        </div>
-
-        <!-- Copyright -->
-        <div class="mt-8 pt-4 border-t border-emerald-700 text-center text-sm opacity-75">
-            <p class="footer-address">Address: Kigali, Rwanda</p>
-            <p class="footer-logo font-bold mt-1">TWUBAKA-UBUMENYI. &copy; 2025 ELIJUL GROUPS LTD. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- JAVASCRIPT LOGIC (Continued) -->
     <script>
+        // --- Configuration ---
+        const API_BASE_URL = 'https://gloex.pythonanywhere.com/api';
         
-        const appContainer = document.getElementById('appContainer');
-
-        function showMessage(message, type) {
-            const box = document.getElementById('messageBox');
-            const colorClass = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
-            
-            box.innerHTML = `
-                <div class="shadow-xl px-4 py-3 rounded relative border ${colorClass}" role="alert">
-                    <strong class="font-bold">${type === 'success' ? 'Success!' : 'Error!'}</strong>
-                    <span class="block sm:inline ml-2">${message}</span>
-                </div>
-            `;
-            box.classList.remove('opacity-0');
-            box.classList.add('opacity-100');
-
-            setTimeout(() => {
-                box.classList.remove('opacity-100');
-                box.classList.add('opacity-0');
-                setTimeout(() => box.innerHTML = '', 300);
-            }, 3000);
-        }
-        
-        // --- View Rendering Functions ---
-
-        // 1. Dashboard View (Project Hubs)
-        const renderDashboard = () => {
-            const { projects, searchText } = window.currentState;
-
-            // Ensure projects is an array before filtering
-            const safeProjects = Array.isArray(projects) ? projects : [];
-
-            const filteredProjects = safeProjects.filter(p => 
-                (p.title || '').toLowerCase().includes(searchText.toLowerCase()) || 
-                (p.description || '').toLowerCase().includes(searchText.toLowerCase()) ||
-                (p.author || '').toLowerCase().includes(searchText.toLowerCase()) ||
-                (p.tags || []).some(tag => tag.toLowerCase().includes(searchText.toLowerCase()))
-            );
-
-            const generateProjectCard = (project) => {
-                const isBlue = project.id.charCodeAt(project.id.length - 1) % 2 === 0;
-                const bgColor = isBlue ? 'bg-sky-50' : 'bg-rose-50';
-                const borderColor = isBlue ? 'border-sky-300' : 'border-rose-300';
-                const textColor = isBlue ? 'text-sky-800' : 'text-rose-800';
-                const tagColor = isBlue ? 'bg-sky-200 text-sky-800' : 'bg-rose-200 text-rose-800';
-
-                return `
-                    <div onclick="window.currentState.selectedProjectId='${project.id}'; window.currentState.view='project-details'; window.renderApp();" 
-                         class="transform transition duration-500 hover:scale-[1.03] cursor-pointer rounded-xl overflow-hidden shadow-xl ${bgColor} border ${borderColor} flex flex-col h-full hover:shadow-2xl">
-                        <img src="${project.image}" alt="${project.title} Preview" class="w-full h-48 object-cover transition duration-300 hover:opacity-90" onerror="this.onerror=null; this.src='https://placehold.co/400x250/f7f7f7/6b7280?text=Image+Missing'">
-                        <div class="p-6 flex flex-col justify-between flex-grow">
-                            <div>
-                                <h3 class="font-extrabold text-xl mb-2 ${textColor} truncate">${project.title}</h3>
-                                <p class="text-gray-600 text-sm line-clamp-3 mb-4">${project.description}</p>
-                            </div>
-                            <div>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    ${(project.tags || []).map(tag => `<span class="text-xs font-semibold px-3 py-1 rounded-full ${tagColor}">${tag}</span>`).join('')}
-                                </div>
-                                <a href="${project.demoUrl}" target="_blank" onclick="event.stopPropagation();" 
-                                   class="green-button inline-flex items-center justify-center text-sm w-full transition duration-300 hover:ring-2 hover:ring-offset-2 hover:ring-emerald-500">
-                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                    View Live Demo
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            };
-
-            appContainer.innerHTML = `
-                <!-- SEARCH BAR -->
-                <div class="container mx-auto px-4 pt-8 pb-4">
-                    <div class="flex justify-center max-w-2xl mx-auto">
-                        <div class="relative w-full">
-                            <input 
-                                type="search" 
-                                placeholder="Search project hubs..." 
-                                id="searchInput"
-                                value="${searchText}"
-                                oninput="window.currentState.searchText = this.value; window.renderApp();"
-                                class="w-full py-3 pl-12 pr-4 rounded-full border-2 border-emerald-400 focus:outline-none focus:border-emerald-600 text-gray-800 bg-white shadow-xl transition duration-300 text-lg"
-                            >
-                            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- HERO SECTION (Blue/Pink Section & Animated Picture) -->
-                <section class="bg-gradient-to-br from-sky-50 to-rose-50 p-8 md:p-16 relative overflow-hidden rounded-b-xl shadow-lg">
-                    <div class="wave-animation absolute inset-0">
-                        <div class="wave wave-1"></div>
-                        <div class="wave wave-2"></div>
-                    </div>
-
-                    <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
-                        <!-- Hero Text and CTA -->
-                        <div class="md:w-1/2 text-center md:text-left">
-                            <h2 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
-                                <span class="text-emerald-600">Discover</span> Cutting-Edge Demos.
-                            </h2>
-                            <p class="text-xl text-gray-700 mb-8">
-                                The gloEx Hub is a curated showcase for working demos—where brilliant code meets opportunity.
-                            </p>
-                            
-                            <!-- Attractive Call to Actions (More real CTAs) -->
-                            <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                                <button 
-                                    onclick="window.currentState.view='upload'; window.renderApp();" 
-                                    class="green-button text-lg shadow-xl hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300">
-                                    <span class="animate-pulse">SHARE YOUR PROJECT</span>
-                                </button>
-                                <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" class="outline-button font-bold">
-                                    HIRE A DEVELOPER
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Animated Picture Placeholder (SVG) -->
-                        <div class="md:w-1/2 h-64 md:h-96 relative flex items-center justify-center">
-                            <svg class="w-40 h-40 md:w-64 md:h-64 text-emerald-500/80 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- PROJECTS GRID SECTION -->
-                <section id="projects" class="container mx-auto px-4 py-16">
-                    <div class="flex justify-between items-center mb-10">
-                        <h2 class="text-4xl font-extrabold text-gray-900 border-b-4 border-rose-500 pb-2">
-                            Project Hubs (${filteredProjects.length})
-                        </h2>
-                    </div>
-
-                    ${filteredProjects.length > 0 ? `
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                            ${filteredProjects.map(generateProjectCard).join('')}
-                        </div>
-                    ` : `
-                        <div class="text-center p-12 bg-white rounded-xl shadow-lg border border-gray-200">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            <h3 class="mt-2 text-xl font-medium text-gray-900">No projects found</h3>
-                            <p class="mt-1 text-gray-500">
-                                Try a different search term or be the first to <a href="#" onclick="window.currentState.view='upload'; window.renderApp();" class="text-emerald-600 font-semibold hover:text-emerald-500 transition duration-200">upload a project</a>!
-                            </p>
-                        </div>
-                    `}
-                </section>
-            `;
+        // --- State Management ---
+        let currentState = {
+            user: null,
+            projects: [],
+            view: 'dashboard', // Default to dashboard for everyone
+            currentProjectDetail: null,
+            searchQuery: '',
         };
 
-        // 2. Project Details View (Kept for completeness)
-        const renderProjectDetails = () => {
-            const project = window.currentState.projects.find(p => p.id === window.currentState.selectedProjectId);
+        const PROJECT_TYPE_OPTIONS = [
+            { value: 'frontend', label: 'Frontend Development' },
+            { value: 'backend', label: 'Backend Development' },
+            { value: 'fullstack', label: 'Full-Stack Application' },
+            { value: 'mobile', label: 'Mobile Application' },
+            { value: 'design', label: 'UI/UX Design' },
+            { value: 'other', label: 'Other' },
+        ];
+
+        // --- Utility Functions ---
+        function getCsrfToken() {
+            const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+            return token ? decodeURIComponent(token.split('=')[1]) : null;
+        }
+
+        function showMessage(text, type = 'success') {
+            const box = document.getElementById('message-box');
+            box.textContent = text;
+            box.style.opacity = 1;
+            box.classList.remove('bg-green-600', 'bg-red-600');
+            box.classList.add(type === 'success' ? 'bg-green-600' : 'bg-red-600'); // Using a darker green
+            setTimeout(() => { box.style.opacity = 0; }, 3500);
+        }
+
+        async function fetchData(url, options = {}) {
+            const defaultHeaders = { 'Content-Type': 'application/json' };
+            const config = { credentials: 'include', ...options, headers: { ...defaultHeaders, ...options.headers } };
+
+            if (options.method && options.method !== 'GET' && !(options.body instanceof FormData)) {
+                const csrfToken = getCsrfToken();
+                if (csrfToken) config.headers['X-CSRFToken'] = csrfToken;
+            }
+            if (options.body instanceof FormData) {
+                delete config.headers['Content-Type']; // Browser sets this with boundary
+            }
+
+            const response = await fetch(url, config);
+            const contentType = response.headers.get("content-type");
+
+            if (!response.ok) {
+                const errorData = contentType?.includes("application/json") ? await response.json() : { error: `HTTP error! Status: ${response.status}` };
+                if (response.status === 401 || response.status === 403) {
+                    currentState.user = null;
+                    renderApp(); // Force re-render to show login state
+                }
+                throw new Error(errorData.error || `Request failed.`);
+            }
+
+            return contentType?.includes("application/json") ? response.json() : response;
+        }
+
+
+        // --- API Calls ---
+        async function checkAuth() {
+            try {
+                const user = await fetchData(`${API_BASE_URL}/user/`);
+                currentState.user = user.is_authenticated ? user : null;
+            } catch (error) {
+                currentState.user = null;
+            }
+        }
+
+        async function fetchProjects(username = null) {
+            let url = `${API_BASE_URL}/projects/`;
+            if (username) url = `${API_BASE_URL}/portfolio/${username}/`;
+            try {
+                currentState.projects = await fetchData(url);
+            } catch (error) {
+                showMessage(`Failed to load projects: ${error.message}`, 'error');
+                currentState.projects = [];
+            }
+        }
+
+        async function fetchProjectDetail(projectId) {
+            try {
+                const project = await fetchData(`${API_BASE_URL}/projects/${projectId}/`);
+                currentState.currentProjectDetail = project;
+                renderProjectDetailModal();
+            } catch (error) {
+                showMessage(`Failed to load project details: ${error.message}`, 'error');
+            }
+        }
+        
+        // NEW: Handle search
+        async function handleSearch(event) {
+            event.preventDefault();
+            const query = event.target.elements.query.value.trim();
+            currentState.searchQuery = query;
+            currentState.view = 'dashboard';
             
-            if (!project) {
-                showMessage("Project not found.", 'error');
-                window.currentState.view = 'dashboard';
-                window.renderApp();
+            if (!query) {
+                await fetchProjects(); // Fetch all public projects if search is cleared
+            } else {
+                try {
+                    currentState.projects = await fetchData(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}`);
+                } catch (error) {
+                    showMessage(`Search failed: ${error.message}`, 'error');
+                    currentState.projects = [];
+                }
+            }
+            renderApp();
+        }
+
+        async function handleAuthForm(event, endpoint) {
+            event.preventDefault();
+            const data = Object.fromEntries(new FormData(event.target).entries());
+            try {
+                const user = await fetchData(`${API_BASE_URL}/${endpoint}/`, { method: 'POST', body: JSON.stringify(data) });
+                currentState.user = user;
+                showMessage(`Welcome, ${user.username}!`);
+                currentState.view = 'dashboard';
+                renderApp();
+            } catch (error) {
+                showMessage(`Authentication failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function handleLogout() {
+            await fetchData(`${API_BASE_URL}/logout/`, { method: 'POST' });
+            currentState.user = null;
+            showMessage('Successfully logged out.');
+            currentState.view = 'dashboard'; // Go back to public dashboard
+            renderApp();
+        }
+
+        async function handlePostProject(event) {
+            event.preventDefault();
+            try {
+                const newProject = await fetchData(`${API_BASE_URL}/projects/`, { method: 'POST', body: new FormData(event.target) });
+                currentState.projects.unshift(newProject);
+                showMessage('Project successfully posted!');
+                event.target.reset();
+                renderApp();
+            } catch (error) {
+                showMessage(`Posting failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // NEW: Handle project deletion
+        async function handleDeleteProject(projectId) {
+            if (!confirm('Are you sure you want to permanently delete this project?')) return;
+            try {
+                await fetchData(`${API_BASE_URL}/projects/${projectId}/`, { method: 'DELETE' });
+                currentState.projects = currentState.projects.filter(p => p.id !== projectId);
+                showMessage('Project deleted successfully.', 'success');
+                closeProjectDetailModal();
+                renderApp();
+            } catch (error) {
+                showMessage(`Deletion failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function handleLikeToggle(projectId) {
+            if (!currentState.user) {
+                showMessage('You must be logged in to like projects.', 'error');
+                return;
+            }
+            try {
+                const response = await fetchData(`${API_BASE_URL}/projects/${projectId}/like/`, { method: 'POST', body: JSON.stringify({}) });
+                const projectInList = currentState.projects.find(p => p.id === projectId);
+                if (projectInList) projectInList.likes_count = response.likes_count;
+                
+                if (currentState.currentProjectDetail?.id === projectId) {
+                    currentState.currentProjectDetail.likes_count = response.likes_count;
+                    currentState.currentProjectDetail.user_has_liked = response.action === 'liked';
+                    renderProjectDetailModal(); // Re-render modal
+                }
+                renderApp(); // Re-render dashboard
+            } catch (error) {
+                showMessage(`Like failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function handlePostComment(event, projectId) {
+            event.preventDefault();
+            const content = event.target.elements.comment_content.value.trim();
+            if (!content) return;
+            try {
+                const newComment = await fetchData(`${API_BASE_URL}/projects/${projectId}/comments/`, { method: 'POST', body: JSON.stringify({ content }) });
+                currentState.currentProjectDetail.comments.unshift(newComment); // Add to top
+                event.target.reset();
+                renderProjectDetailModal();
+            } catch (error) {
+                showMessage(`Comment failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // NEW: Handle comment deletion
+        async function handleDeleteComment(projectId, commentId) {
+            if (!confirm('Are you sure you want to delete this comment?')) return;
+            try {
+                await fetchData(`${API_BASE_URL}/projects/${projectId}/comments/${commentId}/`, { method: 'DELETE' });
+                currentState.currentProjectDetail.comments = currentState.currentProjectDetail.comments.filter(c => c.id !== commentId);
+                renderProjectDetailModal();
+                showMessage('Comment deleted.', 'success');
+            } catch (error) {
+                showMessage(`Could not delete comment: ${error.message}`, 'error');
+            }
+        }
+
+
+        // --- Rendering Logic ---
+        function renderAuthView() {
+            return `
+                <div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-2xl">
+                    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Access Hub</h2>
+                    <div class="flex border border-gray-200 rounded-lg p-1 mb-6">
+                        <button onclick="currentState.view='login'; renderApp()" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'login' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Login</button>
+                        <button onclick="currentState.view='register'; renderApp()" class="flex-1 p-2 text-center rounded-md font-medium transition ${currentState.view === 'register' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'}">Register</button>
+                    </div>
+                    ${currentState.view === 'login' ? renderLoginForm() : renderRegisterForm()}
+                </div>`;
+        }
+        function renderLoginForm() { /* Unchanged from your version, but with updated button colors */
+             return `<form onsubmit="handleAuthForm(event, 'login')">
+                    <div class="mb-4"><label for="u_login" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_login" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <div class="mb-5"><label for="p_login" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_login" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow">Sign In</button>
+                </form>`;
+        }
+        function renderRegisterForm() { /* Unchanged from your version, but with updated button colors */
+             return `<form onsubmit="handleAuthForm(event, 'register')">
+                    <div class="mb-4"><label for="u_reg" class="block text-sm font-medium text-gray-700">Username</label><input type="text" id="u_reg" name="username" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <div class="mb-4"><label for="e_reg" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="e_reg" name="email" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <div class="mb-5"><label for="p_reg" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="p_reg" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow">Create Account</button>
+                </form>`;
+        }
+
+        function renderPostForm() {
+            if (!currentState.user) return '';
+            return `
+                <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Share Your Project</h3>
+                    <form onsubmit="handlePostProject(event)" enctype="multipart/form-data">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div><label for="title" class="text-sm font-medium text-gray-700">Project Title *</label><input type="text" name="title" required class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div><label for="project_url" class="text-sm font-medium text-gray-700">Demo/Primary Link *</label><input type="url" name="project_url" required placeholder="https://" class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div><label for="project_type" class="text-sm font-medium text-gray-700">Category</label><select name="project_type" class="mt-1 w-full p-2 border bg-white rounded-lg focus:ring-yellow-500 focus:border-yellow-500">${PROJECT_TYPE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}</select></div>
+                                <div><label for="description" class="text-sm font-medium text-gray-700">Description</label><textarea name="description" rows="5" placeholder="Briefly describe your project..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div><label for="screenshot" class="text-sm font-medium text-gray-700">Screenshot (Upload)</label><input type="file" name="screenshot" accept="image/*" class="mt-1 text-sm w-full border rounded-lg p-2"></div>
+                                <div><label for="screenshot_url_fallback" class="text-sm font-medium text-gray-700">OR Image Link (Fallback)</label><input type="url" name="screenshot_url_fallback" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div><label for="source_code_url" class="text-sm font-medium text-gray-700">Source Code Link (e.g., GitHub)</label><input type="url" name="source_code_url" placeholder="https://..." class="mt-1 w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div class="grid grid-cols-2 gap-2"><label class="col-span-2 text-sm font-medium text-gray-700">Optional Custom Field</label><input type="text" name="custom_field_name" placeholder="Label (e.g., Tech Stack)" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"><input type="text" name="custom_field_value" placeholder="Value (e.g., React, Django)" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></div>
+                                <div class="flex items-center pt-4"><input name="is_public" type="checkbox" checked class="h-4 w-4 text-blue-600 rounded"><label for="is_public" class="ml-2 text-sm text-gray-700">Make this post public</label></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-lg">Submit Project</button>
+                    </form>
+                </div>`;
+        }
+
+        function renderProjectCard(project) {
+            const imageUrl = project.screenshot_url || 'https://via.placeholder.com/400x250?text=No+Image';
+            return `
+                <div class="bg-white rounded-xl shadow-lg transition duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col cursor-pointer" onclick="fetchProjectDetail(${project.id})">
+                    <img src="${imageUrl}" alt="${project.title} screenshot" class="w-full h-48 object-cover rounded-t-xl">
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2"><h4 class="text-xl font-bold text-gray-800 pr-2">${project.title}</h4><span class="text-xs font-semibold text-blue-800 bg-blue-100 px-2 py-1 rounded-full whitespace-nowrap">${project.project_type}</span></div>
+                        <p class="text-gray-600 mb-3 text-sm flex-grow line-clamp-3">${project.description || 'No description provided.'}</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 pt-2 border-t mt-auto">
+                            <p>By: <a href="#" onclick="event.stopPropagation(); currentState.view='portfolio'; currentState.portfolioUser='${project.username}'; renderApp()" class="font-medium text-blue-700 hover:underline">${project.username}</a></p>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>${project.likes_count}</span>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderProjectDetailModal() {
+            const modal = document.getElementById('project-detail-modal');
+            const content = document.getElementById('modal-content');
+            const p = currentState.currentProjectDetail;
+            if (!p) {
+                closeProjectDetailModal();
                 return;
             }
 
-            appContainer.innerHTML = `
-                <section class="container mx-auto px-4 py-12">
-                    <a href="#" onclick="window.currentState.view='dashboard'; window.renderApp(); return false;" class="inline-flex items-center text-emerald-700 hover:text-emerald-900 font-semibold mb-8 transition duration-300">
-                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        Back to Project Hubs
-                    </a>
+            // Permissions checks
+            const isOwner = currentState.user?.id === p.user_id;
+            
+            // Generate Buttons
+            const ownerButtons = isOwner ? `<button onclick="handleDeleteProject(${p.id})" class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200">Delete Project</button>` : '';
+            const shareButton = `<button onclick="navigator.clipboard.writeText(window.location.origin + '?project=${p.id}'); showMessage('Link copied to clipboard!')" class="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200">Share</button>`;
+            const sourceCodeButton = p.source_code_url ? `<a href="${p.source_code_url}" target="_blank" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">View Source Code</a>` : '';
+            
+            // Generate Custom Field
+            const customFieldHtml = (p.custom_field_name && p.custom_field_value) ? `
+                <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-1">${p.custom_field_name}</h4>
+                <p class="text-gray-600 whitespace-pre-wrap">${p.custom_field_value}</p>
+            ` : '';
 
-                    <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-emerald-500">
-                        <h1 class="text-4xl font-extrabold text-gray-900 mb-2">${project.title}</h1>
-                        <p class="text-lg text-gray-500 mb-6">Submitted by: <span class="font-semibold text-emerald-600">${project.author}</span></p>
+            // Generate Comments
+            const commentsHtml = p.comments?.length > 0 ? p.comments.map(c => `
+                <div class="border-b last:border-b-0 py-3">
+                    <div class="flex justify-between items-start">
+                        <div><p class="font-semibold text-gray-800">${c.username}</p><p class="text-gray-600 text-sm">${c.content}</p></div>
+                        ${(isOwner || currentState.user?.id === c.user_id) ? `<button onclick="handleDeleteComment(${p.id}, ${c.id})" class="text-red-500 hover:text-red-700 text-xs p-1">&times;</button>` : ''}
+                    </div>
+                    <span class="text-xs text-gray-400 mt-1">${new Date(c.created_at).toLocaleString()}</span>
+                </div>`).join('') : `<p class="text-gray-500 text-sm">No comments yet. Be the first!</p>`;
 
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                            <div class="lg:col-span-2 space-y-8">
-                                <img src="${project.image}" alt="${project.title}" class="w-full h-auto rounded-lg shadow-xl" onerror="this.onerror=null; this.src='https://placehold.co/800x450/ccc/000?text=Project+Image+Demo'">
-                                
-                                <div>
-                                    <h3 class="text-2xl font-bold text-gray-800 mb-3 border-b pb-2">Project Overview</h3>
-                                    <p class="text-gray-700 leading-relaxed">${project.description}</p>
+            content.innerHTML = `
+                <div class="p-6 relative">
+                    <button class="absolute top-4 right-4 text-gray-500 hover:text-black" onclick="closeProjectDetailModal()"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                        <div class="lg:col-span-3">
+                            <h2 class="text-3xl font-extrabold text-black mb-1">${p.title}</h2>
+                            <p class="text-sm font-medium text-blue-700 mb-4">${p.project_type} by <a href="#" onclick="event.stopPropagation(); closeProjectDetailModal(); currentState.view='portfolio'; currentState.portfolioUser='${p.username}'; renderApp()" class="font-semibold hover:underline">${p.username}</a></p>
+                            <img src="${p.screenshot_url || 'https://via.placeholder.com/800x500?text=No+Screenshot'}" alt="${p.title}" class="w-full h-auto rounded-lg shadow-xl mb-6">
+                            <div class="flex items-center justify-between gap-4 border-t border-b py-3 mb-6">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="handleLikeToggle(${p.id})" class="flex items-center px-3 py-2 rounded-lg text-sm font-semibold transition ${p.user_has_liked ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}">${p.likes_count} ${p.user_has_liked ? 'Unlike' : 'Like'}</button>
+                                    <a href="${p.project_url}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition">View Live Demo</a>
+                                    ${sourceCodeButton}
                                 </div>
+                                <div class="flex items-center gap-2">${shareButton} ${ownerButtons}</div>
                             </div>
-                            
-                            <div class="lg:col-span-1 bg-gray-50 p-6 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-bold text-gray-800 mb-5 border-b pb-2">Technical Details</h3>
-
-                                <div class="space-y-4 mb-8">
-                                    <p><span class="font-semibold text-gray-700">Views:</span> ${project.views || 0}</p>
-                                    <p><span class="font-semibold text-gray-700">Submission Date:</span> ${new Date().toLocaleDateString()}</p>
-                                </div>
-                                
-                                <h4 class="text-lg font-semibold text-gray-700 mb-3">Key Technologies:</h4>
-                                <div class="flex flex-wrap gap-2 mb-8">
-                                    ${(project.tags || []).map(tag => `<span class="text-sm font-semibold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">${tag}</span>`).join('')}
-                                </div>
-
-                                <div class="space-y-4">
-                                    <a href="${project.demoUrl}" target="_blank" class="green-button block w-full text-center hover:ring-2 hover:ring-offset-2 hover:ring-emerald-500">
-                                        <svg class="w-5 h-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                        Visit Live Demo
-                                    </a>
-                                    <a href="#" onclick="window.currentState.view='ourservices'; window.renderApp(); return false;" class="outline-button block w-full text-center">
-                                        Partner with Author
-                                    </a>
-                                </div>
-                            </div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">Description</h3>
+                            <p class="text-gray-600 mb-6 whitespace-pre-wrap">${p.description || 'No description provided.'}</p>
+                            ${customFieldHtml}
+                        </div>
+                        <div class="lg:col-span-2 border-t lg:border-t-0 lg:border-l lg:pl-6">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Comments (${p.comments.length})</h3>
+                            ${currentState.user ? `<form onsubmit="handlePostComment(event, ${p.id})" class="mb-6"><textarea name="comment_content" rows="3" required placeholder="Add a comment..." class="w-full p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500"></textarea><button type="submit" class="mt-2 w-full bg-blue-500 text-white p-2 rounded-lg text-sm font-semibold hover:bg-blue-600">Post Comment</button></form>` : `<p class="text-sm text-red-500 mb-4">Log in to post a comment.</p>`}
+                            <div class="max-h-[50vh] overflow-y-auto space-y-2 pr-2">${commentsHtml}</div>
                         </div>
                     </div>
-                </section>
-            `;
-        };
-
-        // 3. Upload View
-        const renderUpload = () => {
-            // Note: The handleSubmit logic is defined outside the function so it can be attached to the form correctly.
-            const handleSubmit = (event) => {
-                event.preventDefault();
-                const formData = new FormData(event.target);
-                const projectData = {
-                    title: formData.get('title'),
-                    description: formData.get('description'),
-                    demoUrl: formData.get('demoUrl'),
-                    image: formData.get('imageUrl') || 'https://placehold.co/400x250/ccc/000?text=Pending+Image',
-                    tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-                    author: userId 
-                };
-                
-                window.submitNewProject(projectData);
-            };
-
-            appContainer.innerHTML = `
-                <section class="container mx-auto px-4 py-12">
-                    <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl border-t-4 border-rose-500">
-                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Contribute to the Hub</h2>
-                        <p class="text-center text-lg text-gray-600 mb-8">Share your working demo to showcase your capabilities.</p>
-
-                        <form id="uploadForm" class="space-y-6">
-                            
-                            <!-- Project Title -->
-                            <div>
-                                <label for="title" class="block text-sm font-medium text-gray-700">Project Title</label>
-                                <input type="text" id="title" name="title" required placeholder="e.g., Ultra-Fast Python Backend API"
-                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
-                            </div>
-
-                            <!-- Description -->
-                            <div>
-                                <label for="description" class="block text-sm font-medium text-gray-700">Detailed Description</label>
-                                <textarea id="description" name="description" rows="5" required placeholder="Explain your project, its features, and the technology stack."
-                                          class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500"></textarea>
-                            </div>
-
-                            <!-- Demo URL -->
-                            <div>
-                                <label for="demoUrl" class="block text-sm font-medium text-gray-700">Live Demo or Repository URL (e.g., GitHub)</label>
-                                <input type="url" id="demoUrl" name="demoUrl" required placeholder="https://github.com/your-project"
-                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
-                            </div>
-
-                            <!-- Tags -->
-                            <div>
-                                <label for="tags" class="block text-sm font-medium text-gray-700">Tags (Comma separated, e.g., React, Tailwind, Python)</label>
-                                <input type="text" id="tags" name="tags" required placeholder="WebDev, AI, DataViz, FinTech"
-                                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
-                            </div>
-
-                            <!-- Submission Button -->
-                            <button type="submit" 
-                                    class="green-button w-full flex justify-center py-3 px-4 rounded-lg shadow-xl text-lg font-bold hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300 transition duration-300">
-                                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                                Submit Demo for Review
-                            </button>
-                        </form>
-                    </div>
-                </section>
-            `;
-            // Attach the handler here, after the form is in the DOM
-            document.getElementById('uploadForm').onsubmit = handleSubmit;
-        };
+                </div>`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
         
-        // 4. Our Services View (New Page)
-        const renderOurServices = () => {
-             appContainer.innerHTML = `
-                <section class="container mx-auto px-4 py-16">
-                    <div class="max-w-4xl mx-auto">
-                        <h2 class="text-5xl font-extrabold text-gray-900 mb-4 text-center">Our Services: Building Digital Futures</h2>
-                        <p class="text-xl text-gray-600 mb-12 text-center">ELIJUL GROUPS LTD provides end-to-end solutions, specializing in bespoke software development and strategic consulting.</p>
+        function closeProjectDetailModal() {
+            document.getElementById('project-detail-modal').classList.add('hidden');
+            document.getElementById('project-detail-modal').classList.remove('flex');
+            currentState.currentProjectDetail = null;
+            // Clear the URL parameter without reloading
+            if (window.history.pushState) {
+                const newURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.pushState({ path: newURL }, '', newURL);
+            }
+        }
 
-                        <!-- Service Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            
-                            <!-- Service 1: Custom Software Development -->
-                            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-emerald-500 hover:shadow-xl transition duration-300">
-                                <svg class="w-10 h-10 text-emerald-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Bespoke Development</h3>
-                                <p class="text-gray-600 mb-4">We design, develop, and deploy scalable and secure custom applications, from high-performance backends to intuitive user interfaces.</p>
-                                <a href="mailto:info@gloex.org?subject=Inquiry%20About%20Custom%20Development" class="outline-button text-sm inline-block">Start Project</a>
-                            </div>
+        function renderDashboardView() {
+            const isPortfolio = currentState.view === 'portfolio';
+            const isSearch = !!currentState.searchQuery;
+            let title = `Community Projects (${currentState.projects.length})`;
+            if (isPortfolio) title = `${currentState.portfolioUser}'s Portfolio`;
+            if (isSearch) title = `Search Results for "${currentState.searchQuery}" (${currentState.projects.length})`;
 
-                            <!-- Service 2: Cloud & Infrastructure -->
-                            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-sky-500 hover:shadow-xl transition duration-300">
-                                <svg class="w-10 h-10 text-sky-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999L17 3C13.2 3 10 6.2 10 10.1"/></svg>
-                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Cloud Infrastructure</h3>
-                                <p class="text-gray-600 mb-4">Specializing in deployment and management on modern cloud platforms (e.g., Firebase, AWS), ensuring reliability and optimal cost structure.</p>
-                                <a href="mailto:info@gloex.org?subject=Cloud%20Consultation%20Request" class="outline-button text-sm inline-block">Get Consulting</a>
-                            </div>
+            const projectsHtml = currentState.projects.length > 0
+                ? currentState.projects.map(renderProjectCard).join('')
+                : `<p class="col-span-full text-center text-gray-500 py-10">No projects found.</p>`;
 
-                            <!-- Service 3: Product Strategy & UX/UI -->
-                            <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-rose-500 hover:shadow-xl transition duration-300">
-                                <svg class="w-10 h-10 text-rose-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.674m-.944 4v-4.665M7.674 8.76l5.72 5.72M8.196 17.58L12 13.778l3.804 3.804M7.663 5h8.674L16 6.337v6.337L12 16.337 7.663 12.674V6.337L8.196 5z"/></svg>
-                                <h3 class="text-2xl font-bold text-gray-800 mb-3">Product & Design</h3>
-                                <p class="text-gray-600 mb-4">From initial concept to final mockups, we guide your product strategy and deliver exceptional UX/UI design that converts users.</p>
-                                <a href="mailto:info@gloex.org?subject=Design%20and%20Strategy%20Inquiry" class="outline-button text-sm inline-block">View Portfolio</a>
-                            </div>
-                        </div>
-
-                        <!-- CTA Section -->
-                        <div class="mt-16 text-center bg-emerald-50 p-10 rounded-xl shadow-inner border border-emerald-200">
-                            <h3 class="text-3xl font-extrabold text-gray-900 mb-4">Ready to Build with Us?</h3>
-                            <p class="text-lg text-gray-700 mb-6">Discuss your project requirements with our technical team today.</p>
-                            <a href="mailto:info@gloex.org" class="green-button text-lg font-bold py-3 px-8 shadow-xl hover:ring-4 hover:ring-offset-2 hover:ring-emerald-300">
-                                REQUEST A FREE QUOTE
-                            </a>
-                        </div>
+            return `
+                <div>
+                    ${!isPortfolio ? renderPostForm() : ''}
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 mt-8 border-b pb-3">${title}</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        ${projectsHtml}
                     </div>
-                </section>
-             `;
-        };
-
-        // 5. About Us View (New Page)
-        const renderAboutUs = () => {
-             appContainer.innerHTML = `
-                <section class="container mx-auto px-4 py-16">
-                    <div class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-xl shadow-2xl border-t-4 border-sky-500">
-                        <h2 class="text-5xl font-extrabold text-gray-900 mb-4 text-center">About ELIJUL GROUPS LTD</h2>
-                        <h3 class="text-xl text-emerald-600 mb-10 text-center font-semibold border-b pb-4">Our Motto: TWUBAKA-UBUMENYI (We Build Knowledge)</h3>
-
-                        <!-- Mission Section -->
-                        <div class="mb-12">
-                            <h4 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
-                                <svg class="w-8 h-8 mr-3 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                Our Vision and Mission
-                            </h4>
-                            <p class="text-lg text-gray-700 leading-relaxed">
-                                Founded in **Kigali, Rwanda**, ELIJUL GROUPS LTD is committed to leveraging technology to build capacity and drive innovation across Africa and the world. We believe that by building powerful, accessible software, we empower businesses and communities to achieve their full potential. The **gloEx Hub** is a direct reflection of this mission, serving as a platform for open source development and collaborative learning.
-                            </p>
-                        </div>
-                        
-                        <!-- Values Section -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-                            <div class="text-center p-4 bg-gray-50 rounded-lg">
-                                <h5 class="font-bold text-xl text-emerald-600">Innovation</h5>
-                                <p class="text-sm text-gray-600">Always adopting the latest technologies.</p>
-                            </div>
-                             <div class="text-center p-4 bg-gray-50 rounded-lg">
-                                <h5 class="font-bold text-xl text-sky-600">Quality</h5>
-                                <p class="text-sm text-gray-600">Delivering highly secure and reliable code.</p>
-                            </div>
-                             <div class="text-center p-4 bg-gray-50 rounded-lg">
-                                <h5 class="font-bold text-xl text-rose-600">Collaboration</h5>
-                                <p class="text-sm text-gray-600">Working closely with partners and developers.</p>
-                            </div>
-                        </div>
-
-                        <!-- CTA -->
-                        <div class="text-center pt-8 border-t border-gray-200">
-                            <h4 class="text-2xl font-bold text-gray-800 mb-4">Connect with Our Team</h4>
-                            <p class="text-gray-700 mb-6">Reach out to us for partnerships or to learn more about our company culture.</p>
-                            <a href="mailto:info@gloex.org" class="green-button text-lg font-bold py-3 px-8 shadow-xl">
-                                CONTACT ELIJUL GROUPS
-                            </a>
-                        </div>
-                    </div>
-                </section>
-             `;
-        };
+                </div>`;
+        }
         
-        // --- Main Application Renderer (Core Feature) ---
-        window.renderApp = () => {
-            // Update the active state in the navigation bar
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            // Use the correct IDs for navigation links
-            const viewMap = {
-                'dashboard': 'nav-dashboard',
-                'ourservices': 'nav-ourservices',
-                'aboutus': 'nav-aboutus',
-                'upload': 'nav-upload' // Upload is a button, but we'll highlight it if active
-            };
-            const activeNavId = viewMap[window.currentState.view];
-            const activeLink = document.getElementById(activeNavId);
-            if(activeLink && window.currentState.view !== 'upload') {
-                activeLink.classList.add('active');
+        function renderHeaderNav() {
+            const nav = document.getElementById('nav-actions');
+            if (currentState.user) {
+                nav.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <button onclick="currentState.view='portfolio'; currentState.portfolioUser='${currentState.user.username}'; renderApp()" class="text-sm font-semibold text-blue-700 hover:text-blue-900 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100">My Portfolio</button>
+                        <button onclick="handleLogout()" class="bg-yellow-500 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition shadow">Logout</button>
+                    </div>`;
+            } else {
+                nav.innerHTML = `<button onclick="currentState.view='login'; renderApp()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow">Login / Register</button>`;
             }
+        }
 
+        async function renderApp() {
+            const container = document.getElementById('app-container');
+            renderHeaderNav();
+            container.innerHTML = `<div class="text-center py-20 text-gray-500">Loading...</div>`;
 
-            // Show a basic loading screen if auth is not ready yet
-            if (!window.currentState.isAuthReady && window.currentState.projects.length === 0) {
-                 appContainer.innerHTML = `
-                    <div class="flex flex-col items-center justify-center min-h-[50vh] text-emerald-600">
-                        <svg class="animate-spin h-10 w-10 text-emerald-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p class="text-lg font-semibold">Connecting to Data Hub...</p>
-                    </div>
-                 `;
-                 return;
+            switch (currentState.view) {
+                case 'login':
+                case 'register':
+                    container.innerHTML = renderAuthView();
+                    break;
+                case 'portfolio':
+                    await fetchProjects(currentState.portfolioUser);
+                    container.innerHTML = renderDashboardView();
+                    break;
+                default: // dashboard
+                    // If not a search result, fetch all projects. Search handles its own fetching.
+                    if (!currentState.searchQuery) await fetchProjects();
+                    container.innerHTML = renderDashboardView();
             }
+        }
 
-            // Render the specific view
-            switch (window.currentState.view) {
-                case 'dashboard':
-                    renderDashboard();
-                    break;
-                case 'project-details':
-                    renderProjectDetails();
-                    break;
-                case 'upload':
-                    renderUpload();
-                    break;
-                case 'ourservices':
-                    renderOurServices();
-                    break;
-                case 'aboutus':
-                    renderAboutUs();
-                    break;
-                default:
-                    window.currentState.view = 'dashboard';
-                    renderDashboard();
-                    break;
+        // --- Initialization ---
+        async function init() {
+            await checkAuth();
+            
+            // NEW: Check for project ID in URL for direct linking
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('project');
+            
+            if (projectId) {
+                await fetchProjectDetail(projectId);
             }
-        };
+            
+            renderApp();
+        }
 
-        // CRITICAL FIX: Call renderApp() immediately to show content, even if Firebase is still connecting.
-        // We removed the DOMContentLoaded listener and call it directly.
-        window.renderApp(); 
+        window.onload = init;
     </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOEX.ORG | ELIJUL GROUPS LTD - Digital Solutions in Kigali, Rwanda</title>
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e9eef2;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header & Logo */
+        header {
+            background-color: #008000; /* Deep Green */
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        header img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin: 10px 0 5px;
+            letter-spacing: 5px;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 1.3em;
+            color: #ffcc00;
+        }
+
+        /* Animated Tank Section */
+        .animated-tank-section {
+            background-color: #e9eef2; /* Match body background for a seamless look */
+            text-align: center;
+            padding: 20px 0;
+            overflow: hidden; /* Hide overflow from animation */
+        }
+
+        .tank-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px; /* Adjust height as needed for the image */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tank-image {
+            max-width: 100%;
+            height: auto;
+            animation: bounce 2s infinite alternate; /* Simple bounce animation */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tank-image:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-15px); }
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #e0f7e0;
+            border-bottom: 5px solid #006400;
+        }
+
+        .welcome-section h2 {
+            color: #006400;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section .tagline {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .welcome-section .price-callout {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #ff0000;
+            margin-top: 15px;
+            padding: 10px;
+            border: 2px dashed #ff0000;
+            display: inline-block;
+            background-color: #fffafa;
+        }
+        
+        /* Backend Demo Section */
+        .demo-section {
+            background-color: #5555ff; /* Blue CTA background */
+            padding: 20px;
+            text-align: center;
+        }
+
+        .demo-button {
+            background-color: #ffcc00; /* Yellow button */
+            color: #000;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px; /* Pill shape */
+            transition: background-color 0.3s, transform 0.1s;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .demo-button:hover {
+            background-color: #ffea70;
+            transform: translateY(-2px);
+        }
+
+        .demo-section p {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+
+        /* Services Grid */
+        .services-section {
+            padding: 40px 20px;
+        }
+        
+        .services-section h3 {
+            text-align: center;
+            color: #008000;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #008000;
+            padding-bottom: 10px;
+        }
+
+        .category {
+            margin-bottom: 50px;
+        }
+
+        .category h4 {
+            color: #006400;
+            font-size: 1.8em;
+            border-left: 6px solid #ffcc00;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+
+        .service-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .service-list li {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, background-color 0.2s;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            position: relative; 
+        }
+
+        .service-list li:hover {
+            transform: translateY(-5px);
+            background-color: #f0fff0;
+            border-color: #008000;
+        }
+
+        .service-list strong {
+            display: block;
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .service-list span {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Modal/Overlay Styles FIX */
+        .modal-content {
+            display: none; 
+            padding: 15px;
+            margin-top: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+            position: absolute; 
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        li:hover .modal-content {
+            display: block; 
+            width: 90%;
+            max-width: 500px;
+            top: 100%; 
+            left: 0;
+            transform: translateX(0);
+        }
+
+        /* Contact Section */
+        .contact-info {
+            background-color: #333;
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .contact-info h3 {
+            color: #ffcc00;
+            margin-top: 0;
+            font-size: 2em;
+        }
+
+        .contact-info p {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        
+        .contact-info a {
+            color: #ffcc00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer-address {
+            margin-top: 20px;
+            font-size: 1em;
+            border-top: 1px solid #555;
+            padding-top: 10px;
+        }
+        
+        .footer-logo {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #bbb;
+        }
+
+        .admin-link {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #999;
+            text-decoration: none;
+        }
+        .admin-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="1-1.png" alt="GLOEX.ORG Logo">
+            <h1>GLOEX.ORG</h1>
+            <p>ELIJUL GROUPS LTD</p>
+        </header>
+
+        <div class="animated-tank-section">
+            <div class="tank-wrapper">
+                <img src="tank_picture.png" alt="GLOEX.ORG Services" class="tank-image">
+            </div>
+        </div>
+        <div class="welcome-section">
+            <p style="font-size: 1.1em; color: #000;">DISCOVER</p>
+            <h2>GET YOUR WEBSITE OR SOFTWARE TODAY!</h2>
+            <p class="tagline">WE BUILD ROBUST, AFFORDABLE, AND SCALABLE DIGITAL SOLUTIONS.</p>
+            <p class="price-callout">STARTING FROM 20,000 FRW.</p>
+        </div>
+
+        <div class="demo-section">
+            <p>Want to see our live work in action?</p>
+            <a href="https://bizimanasoftware.pythonanywhere.com" target="_blank" class="demo-button">
+                LAUNCH TALENTHUB-DEMO
+            </a>
+            <a href="https://addproducts.pythonanywhere.com" target="_blank" class="demo-button">
+                LAUNCH E-COMMERCE-DEMO
+            </a>
+             <a href="https://gitlab.com/bizimanasoftware/" target="_blank" class="demo-button">
+                VIEW GITLAB PROJECTS
+            </a>
+            <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO4
+            </a>
+             <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO5
+            </a>
+            <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO6
+            </a>
+             <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO7
+            </a>
+            <a href="#" target="_blank" class="demo-button" background="#008000">
+                LAUNCH DEMO8
+            </a>
+             <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO9
+            </a>
+            <a href="#" target="_blank" class="demo-button">
+                LAUNCH DEMO10
+            </a>
+        </div>
+        <div class="services-section">
+            <h3> WHAT WE OFFER (STARTING FROM 20,000RWF)</h3>
+
+            <div class="category">
+                <h4>捗 Web, Software & Modern Development</h4>
+                <ul class="service-list">
+                    <li title="Click to learn more about comprehensive platform maintenance.">
+                        <strong>Website Maintenance & Management</strong>
+                        <span>Ensuring your website is secure, fast, and up-to-date. Includes Free Website Management.</span>
+                        <div class="modal-content">
+                            Details: We handle backups, security patching, content updates, and performance optimization so you can focus on your business.
+                        </div>
+                    </li>
+                    <li title="Click to learn about custom web application and API creation.">
+                        <strong>Custom Web/Mobile Application Development</strong>
+                        <span>Building unique, large-scale software solutions for complex business needs.</span>
+                        <div class="modal-content">
+                            Details: From bespoke internal tools to public-facing applications, we use modern frameworks (like React, Node.js) to deliver high performance.
+                        </div>
+                    </li>
+                    <li title="Click to learn about integrating AI features.">
+                        <strong>Advanced API & AI Integration</strong>
+                        <span>Connecting your systems and embedding intelligent features like chatbots and data analysis.</span>
+                        <div class="modal-content">
+                            Details: We integrate third-party APIs (e.g., payment gateways) and implement Machine Learning models to automate tasks and provide deep insights.
+                        </div>
+                    </li>
+                    <li title="Click to learn about e-commerce platforms.">
+                        <strong>Ecommerce Stores & Online Payments</strong>
+                        <span>Creating powerful online shops and integrating secure payment gateways for global transactions.</span>
+                        <div class="modal-content">
+                            Details: Full-stack e-commerce solutions, product management, secure payment processing, and inventory synchronization.
+                        </div>
+                    </li>
+                </ul>
+                <h4 style="margin-top: 30px;">Specific Website Types</h4>
+                <ul class="service-list">
+                    <li><strong>School & E-learning/LMS Platforms</strong></li>
+                    <li><strong>Hospital & Clinic Websites</strong></li>
+                    <li><strong>Hotel & Bar Reservation Systems</strong></li>
+                    <li><strong>Business & Corporate Sites</strong></li>
+                    <li><strong>Personal Blogs & Media Sites</strong></li>
+                </ul>
+            </div>
+
+            <div class="category">
+                <h4>直 Business Automation & Financial Systems</h4>
+                <ul class="service-list">
+                    <li>
+                        <strong>Billing, POS & Invoicing Systems</strong>
+                        <span>Streamlining sales, inventory tracking, and client billing for retail and service industries.</span>
+                        <div class="modal-content">
+                            Details: Customized Point-of-Sale (POS) systems, automated invoicing, and sales reporting tools for financial clarity.
+                        </div>
+                    </li>
+                    <li>
+                        <strong>HR, Payroll & CRM Tools</strong>
+                        <span>Managing your workforce and client relationships efficiently in one centralized system.</span>
+                        <div class="modal-content">
+                            Details: Tools for staff management, automated salary calculation, and Customer Relationship Management (CRM) to track leads and support history.
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Stock & Inventory Management Systems</strong>
+                        <span>Keeping track of assets, stock levels, and supply chains in real-time.</span>
+                        <div class="modal-content">
+                            Details: Automated low-stock alerts, multi-warehouse support, and detailed reporting to minimize loss and optimize purchasing.
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Ticketing Systems & Customer Support</strong>
+                        <span>Professional systems for managing support queries, help desks, and technical requests.</span>
+                        <div class="modal-content">
+                            Details: Efficient help desk software, ticket prioritization, and integrated knowledge bases for faster customer resolution.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="category">
+                <h4>白 Cyber Security & Data Solutions</h4>
+                <ul class="service-list">
+                    <li title="Click to learn about our security services.">
+                        <strong>Proactive Cyber Security Support</strong>
+                        <span>Protecting your digital assets from threats with monitoring, patching, and defense strategies.</span>
+                        <div class="modal-content">
+                            Details: Security audits, firewall configuration, regular vulnerability scanning, and quick incident response to keep your data safe.
+                        </div>
+                    </li>
+                    <li title="Click to learn about hosting and infrastructure.">
+                        <strong>Cloud Infrastructure & Deployment (DevOps)</strong>
+                        <span>Setting up secure, scalable, and high-availability cloud hosting environments (e.g., AWS, Azure).</span>
+                        <div class="modal-content">
+                            Details: Professional deployment, automated scaling, continuous integration/continuous deployment (CI/CD) pipelines, and server management.
+                        </div>
+                    </li>
+                    <li title="Click to learn about data reporting.">
+                        <strong>Data Analytics Board & Business Intelligence</strong>
+                        <span>Turning raw data into actionable insights with custom dashboards and reporting tools.</span>
+                        <div class="modal-content">
+                            Details: We connect your various systems to create a unified dashboard for visualizing key performance indicators (KPIs) and business health.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="category">
+                <h4>嶋 Marketing & Branding Services</h4>
+                <ul class="service-list">
+                    <li>
+                        <strong>SEO Services & Digital Marketing</strong>
+                        <span>Optimizing your site to rank higher in search results (Google, Bing).</span>
+                    </li>
+                    <li>
+                        <strong>Logo Branding & Graphic Design</strong>
+                        <span>Creating professional, memorable logos and visual assets for your brand identity.</span>
+                    </li>
+                    <li>
+                        <strong>SMS/Email Marketing Campaigns</strong>
+                        <span>Reaching your audience directly with targeted and effective communication strategies.</span>
+                    </li>
+                    <li>
+                        <strong>Email Setup & Professional Hosting</strong>
+                        <span>Setting up professional email addresses (e.g., *you@yourcompany.com*) and secure email hosting.</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="demo-section">
+            <p>want to download some popular free-ope-source-projects?</p>
+            <a href="https://github.com/django-oscar/django-oscar" target="_blank" class="demo-button">
+                E-COMMERCE
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button" background="#008000">
+                DOWNLOAD FREE PROJECTS
+            </a>
+             <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+            <a href="https://github.com/" target="_blank" class="demo-button">
+                DOWNLOAD FREE PROJECTS
+            </a>
+        </div>
+            
+        </div>
+
+        <div class="contact-info">
+            <h3>到 Ready to Start Your Project?</h3>
+            <p>Contact the ELIJUL GROUPS LTD team today.</p>
+            <p>Website: <a href="https://www.gloex.org">WWW.GLOEX.ORG</a></p>
+            <p>Email: <a href="mailto:infogloex@proton.me">infogloex@proton.me     (webs&software)</a></p>
+            <p>Email: <a href="mailto:info@gloex.org">info@gloex.org     (for partnership)</a></p>
+            <p>Phone/WhatsApp: +250788660513</p>
+            <p class="footer-address">
+                Address: Kigali, Rwanda
+            </p>
+            <p class="footer-logo">TWUBAKA-WEB</p>
+            <a href="#" class="">projects</a>
+        </div>
+    </div>
 
 </body>
 </html>
