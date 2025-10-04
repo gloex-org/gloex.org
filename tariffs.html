@@ -44,8 +44,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // ✅ Adjust this path based on your Django URL prefix
-            const API_ENDPOINT = '/apied/tariffs/';  // or '/api/tariffs/' if your main urls.py uses 'api/'
+            // ✅ Ensure this path matches your Django urls.py configuration
+            const API_ENDPOINT = '/apied/tariffs/';
 
             const tariffContainer = document.getElementById('tariff-cards-grid');
             const loadingState = document.getElementById('loading-state');
@@ -65,7 +65,7 @@
 
                     const responseData = await response.json();
 
-                    // ✅ FIXED: Backend returns an array directly, not {tariffs: [...]}
+                    // ✅ FIXED: Backend returns an array directly, so we pass the whole responseData
                     renderTariffs(responseData || []);
                 } catch (error) {
                     console.error("Failed to fetch tariffs:", error);
