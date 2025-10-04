@@ -19,7 +19,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
 
     <div class="min-h-screen flex flex-col items-center justify-start py-12 px-4 sm:px-6 lg:px-8">
         
@@ -64,8 +64,8 @@
                     
                     const responseData = await response.json();
                     
-                    // CRITICAL FIX: Extract the 'tariffs' array
-                    renderTariffs(responseData.tariffs || []); 
+                    // ✅ THE CRITICAL FIX: The API returns a list directly, so we use responseData.
+                    renderTariffs(responseData || []); 
                     
                 } catch (error) {
                     console.error("Failed to fetch tariffs:", error);
