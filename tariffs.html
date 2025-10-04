@@ -1,89 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gloex | Tariffs & Pricing</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .fade-in { animation: fadeIn 0.5s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  </style>
-</head>
-<body class="bg-gray-50 text-gray-800">
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-8 shadow-lg">
-    <h1 class="text-4xl font-bold text-center">💼 Gloex Tariffs & Services</h1>
-    <p class="text-center mt-3 text-gray-100">Transparent, flexible, and scalable pricing for every business need.</p>
-  </header>
-
-  <!-- Main -->
-  <main class="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-lg fade-in">
-    <h2 class="text-2xl font-semibold mb-6 text-center text-green-600">Our Active Packages</h2>
-    <div class="overflow-x-auto">
-      <table class="min-w-full border border-gray-300 rounded-lg shadow-sm">
-        <thead class="bg-green-600 text-white">
-          <tr>
-            <th class="p-4 text-left">Service</th>
-            <th class="p-4 text-left">Description</th>
-            <th class="p-4 text-left">Price</th>
-            <th class="p-4 text-center">Action</th>
-          </tr>
-        </thead>
-        <tbody id="tariff-body" class="divide-y divide-gray-200">
-          <tr>
-            <td colspan="4" class="p-6 text-center text-gray-500">Loading tariffs...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer class="bg-gray-800 text-gray-200 text-center py-6 mt-10">
-    <p>&copy; 2025 Gloex — All Rights Reserved.</p>
-  </footer>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const API_ENDPOINT = "https://gloex.pythonanywhere.com/api/tariffs/"; // ✅ Full URL to backend
-      const tableBody = document.getElementById("tariff-body");
-
-      try {
-        const response = await fetch(API_ENDPOINT, { method: "GET" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-
-        if (!data.length) {
-          tableBody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500">No active tariffs found.</td></tr>`;
-          return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Services & Pricing - Gloex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Light background for contrast */
         }
+        /* Style for the colored border on cards */
+        .tariff-card-border {
+            border-top: 4px solid;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
 
-        tableBody.innerHTML = data.map(t => `
-          <tr class="hover:bg-gray-50 transition">
-            <td class="p-4 font-semibold text-gray-900">${t.title}</td>
-            <td class="p-4 text-gray-600">${t.description || "—"}</td>
-            <td class="p-4 font-bold" style="color:${t.color || '#22c55e'}">${t.price}</td>
-            <td class="p-4 text-center">
-              <a href="${t.redirect_url}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-md">
-                View Service
-              </a>
-            </td>
-          </tr>
-        `).join("");
+    <div class="min-h-screen flex flex-col items-center justify-start py-12 px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center mb-12 max-w-3xl">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+                Choose Your Service Plan
+            </h1>
+            <p class="mt-4 text-xl text-gray-600">
+                Simple, transparent pricing to get your project off the ground. No hidden fees.
+            </p>
+        </div>
 
-      } catch (error) {
-        console.error("Error fetching tariffs:", error);
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="4" class="p-6 text-center text-red-600">
-              ⚠️ Unable to load tariffs from the server. Please check your internet or backend status.
-            </td>
-          </tr>`;
-      }
-    });
-  </script>
+        <div id="tariff-container" class="w-full max-w-6xl">
+            <div id="loading-state" class="text-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                <p class="mt-4 text-gray-500 font-medium">Loading service plans...</p>
+            </div>
+            
+            <div id="tariff-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_ENDPOINT = 'https://gloex.pythonanywhere.com/api/tariffs/';
+            const tariffContainer = document.getElementById('tariff-cards-grid');
+            const loadingState = document.getElementById('loading-state');
+            
+            // --- API Fetching ---
+            async function fetchAndRenderTariffs() {
+                // Show loading spinner
+                loadingState.classList.remove('hidden');
+                tariffContainer.innerHTML = ''; 
+
+                try {
+                    const response = await fetch(API_ENDPOINT);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const responseData = await response.json();
+                    
+                    // CRITICAL FIX: Extract the 'tariffs' array
+                    renderTariffs(responseData.tariffs || []); 
+                    
+                } catch (error) {
+                    console.error("Failed to fetch tariffs:", error);
+                    renderError();
+                } finally {
+                    // Hide loading spinner regardless of outcome
+                    loadingState.classList.add('hidden');
+                }
+            }
+
+            function renderTariffs(tariffs) {
+                if (!Array.isArray(tariffs) || tariffs.length === 0) {
+                    tariffContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10 text-xl">No services are currently available. Please check back soon!</p>';
+                    return;
+                }
+
+                tariffs.forEach(tariff => {
+                    const cardColor = tariff.color || '#6366F1'; // Default to Indigo if color is missing
+                    
+                    const tariffCard = document.createElement('div');
+                    tariffCard.className = 'flex flex-col bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden tariff-card-border';
+                    tariffCard.style.borderColor = cardColor; // Apply color to the top border
+
+                    tariffCard.innerHTML = `
+                        <div class="p-6 flex-grow">
+                            <h2 class="text-2xl font-bold text-gray-900">${tariff.title}</h2>
+                            <p class="mt-3 text-sm text-gray-600">${tariff.description || 'A brief explanation of the service is coming soon.'}</p>
+                            
+                            <div class="mt-6">
+                                <p class="text-3xl font-extrabold" style="color: ${cardColor}">
+                                    ${tariff.price}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 bg-gray-50 border-t border-gray-100">
+                            <a href="${tariff.redirect_url}" target="_blank" class="w-full inline-block text-center py-3 px-6 border border-transparent rounded-lg text-base font-semibold text-white transition-colors duration-200" style="background-color: ${cardColor}; hover:bg-opacity-90;">
+                                Get Started
+                            </a>
+                        </div>
+                    `;
+                    tariffContainer.appendChild(tariffCard);
+                });
+            }
+            
+            function renderError() {
+                tariffContainer.innerHTML = `
+                    <div class="col-span-full text-center py-20 bg-red-50 border border-red-200 rounded-lg p-8">
+                        <p class="text-2xl text-red-700 font-bold">Server Error</p>
+                        <p class="text-red-500 mt-2">We couldn't load the service plans right now. Please check the network connection or try reloading the page.</p>
+                    </div>
+                `;
+            }
+
+            // Initial call to fetch data when the page loads
+            fetchAndRenderTariffs();
+        });
+    </script>
 </body>
 </html>
