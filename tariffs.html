@@ -1,128 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Services & Pricing - Gloex</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fc; /* Light background for contrast */
-        }
-        /* Style for the colored border on cards */
-        .tariff-card-border {
-            border-top: 4px solid;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Services & Pricing - Gloex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .tariff-card-border {
+            border-top: 4px solid;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-100">
 
-    <div class="min-h-screen flex flex-col items-center justify-start py-12 px-4 sm:px-6 lg:px-8">
-        
-        <div class="text-center mb-12 max-w-3xl">
-            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-                Choose Your Service Plan
-            </h1>
-            <p class="mt-4 text-xl text-gray-600">
-                Simple, transparent pricing to get your project off the ground. No hidden fees.
-            </p>
-        </div>
+    <div class="min-h-screen flex flex-col items-center justify-start py-12 px-4 sm:px-6 lg:px-8">
+        
+                <div class="text-center mb-12 max-w-3xl">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+                Choose Your Service Plan
+            </h1>
+            <p class="mt-4 text-xl text-gray-600">
+                Simple, transparent pricing to get your project off the ground. No hidden fees.
+            </p>
+        </div>
 
-        <div id="tariff-container" class="w-full max-w-6xl">
-            <div id="loading-state" class="text-center py-20">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                <p class="mt-4 text-gray-500 font-medium">Loading service plans...</p>
-            </div>
-            
-            <div id="tariff-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                </div>
-        </div>
+                <div id="tariff-container" class="w-full max-w-6xl">
+            <div id="loading-state" class="text-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                <p class="mt-4 text-gray-500 font-medium">Loading service plans...</p>
+            </div>
+            
+            <div id="tariff-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
 
-    </div>
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const API_ENDPOINT = '/api/tariffs/';
-            const tariffContainer = document.getElementById('tariff-cards-grid');
-            const loadingState = document.getElementById('loading-state');
-            
-            // --- API Fetching ---
-            async function fetchAndRenderTariffs() {
-                // Show loading spinner
-                loadingState.classList.remove('hidden');
-                tariffContainer.innerHTML = ''; 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ✅ Adjust this path based on your Django URL prefix
+            const API_ENDPOINT = '/apied/tariffs/';  // or '/api/tariffs/' if your main urls.py uses 'api/'
 
-                try {
-                    const response = await fetch(API_ENDPOINT);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const responseData = await response.json();
-                    
-                    // ✅ THE CRITICAL FIX: The API returns a list directly, so we use responseData.
-                    renderTariffs(responseData || []); 
-                    
-                } catch (error) {
-                    console.error("Failed to fetch tariffs:", error);
-                    renderError();
-                } finally {
-                    // Hide loading spinner regardless of outcome
-                    loadingState.classList.add('hidden');
-                }
-            }
+            const tariffContainer = document.getElementById('tariff-cards-grid');
+            const loadingState = document.getElementById('loading-state');
 
-            function renderTariffs(tariffs) {
-                if (!Array.isArray(tariffs) || tariffs.length === 0) {
-                    tariffContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10 text-xl">No services are currently available. Please check back soon!</p>';
-                    return;
-                }
+            // --- API Fetching ---
+            async function fetchAndRenderTariffs() {
+                loadingState.classList.remove('hidden');
+                tariffContainer.innerHTML = '';
 
-                tariffs.forEach(tariff => {
-                    const cardColor = tariff.color || '#6366F1'; // Default to Indigo if color is missing
-                    
-                    const tariffCard = document.createElement('div');
-                    tariffCard.className = 'flex flex-col bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden tariff-card-border';
-                    tariffCard.style.borderColor = cardColor; // Apply color to the top border
+                try {
+                    console.log("Fetching tariffs from:", API_ENDPOINT);
+                    const response = await fetch(API_ENDPOINT);
 
-                    tariffCard.innerHTML = `
-                        <div class="p-6 flex-grow">
-                            <h2 class="text-2xl font-bold text-gray-900">${tariff.title}</h2>
-                            <p class="mt-3 text-sm text-gray-600">${tariff.description || 'A brief explanation of the service is coming soon.'}</p>
-                            
-                            <div class="mt-6">
-                                <p class="text-3xl font-extrabold" style="color: ${cardColor}">
-                                    ${tariff.price}
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="p-6 bg-gray-50 border-t border-gray-100">
-                            <a href="${tariff.redirect_url}" target="_blank" class="w-full inline-block text-center py-3 px-6 border border-transparent rounded-lg text-base font-semibold text-white transition-colors duration-200" style="background-color: ${cardColor}; hover:bg-opacity-90;">
-                                Get Started
-                            </a>
-                        </div>
-                    `;
-                    tariffContainer.appendChild(tariffCard);
-                });
-            }
-            
-            function renderError() {
-                tariffContainer.innerHTML = `
-                    <div class="col-span-full text-center py-20 bg-red-50 border border-red-200 rounded-lg p-8">
-                        <p class="text-2xl text-red-700 font-bold">Server Error</p>
-                        <p class="text-red-500 mt-2">We couldn't load the service plans right now. Please check the network connection or try reloading the page.</p>
-                    </div>
-                `;
-            }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-            // Initial call to fetch data when the page loads
-            fetchAndRenderTariffs();
-        });
-    </script>
+                    const responseData = await response.json();
+
+                    // ✅ FIXED: Backend returns an array directly, not {tariffs: [...]}
+                    renderTariffs(responseData || []);
+                } catch (error) {
+                    console.error("Failed to fetch tariffs:", error);
+                    renderError();
+                } finally {
+                    loadingState.classList.add('hidden');
+                }
+            }
+
+            // --- RENDERING ---
+            function renderTariffs(tariffs) {
+                if (!Array.isArray(tariffs) || tariffs.length === 0) {
+                    tariffContainer.innerHTML = `
+                        <p class="col-span-full text-center text-gray-500 py-10 text-xl">
+                            No services are currently available. Please check back soon!
+                        </p>`;
+                    return;
+                }
+
+                tariffs.forEach(tariff => {
+                    const cardColor = tariff.color || '#6366F1';
+
+                    const tariffCard = document.createElement('div');
+                    tariffCard.className = `
+                        flex flex-col bg-white rounded-xl shadow-lg 
+                        hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 
+                        overflow-hidden tariff-card-border
+                    `;
+                    tariffCard.style.borderColor = cardColor;
+
+                    tariffCard.innerHTML = `
+                        <div class="p-6 flex-grow">
+                            <h2 class="text-2xl font-bold text-gray-900">${tariff.title}</h2>
+                            <p class="mt-3 text-sm text-gray-600">${tariff.description || 'A brief explanation of this service is coming soon.'}</p>
+                            <div class="mt-6">
+                                <p class="text-3xl font-extrabold" style="color: ${cardColor}">
+                                    ${tariff.price}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-6 bg-gray-50 border-t border-gray-100">
+                            <a href="${tariff.redirect_url}" target="_blank"
+                               class="w-full inline-block text-center py-3 px-6 border border-transparent rounded-lg 
+                               text-base font-semibold text-white transition-colors duration-200"
+                               style="background-color: ${cardColor};">
+                                Get Started
+                            </a>
+                        </div>
+                    `;
+                    tariffContainer.appendChild(tariffCard);
+                });
+            }
+
+            function renderError() {
+                tariffContainer.innerHTML = `
+                    <div class="col-span-full text-center py-20 bg-red-50 border border-red-200 rounded-lg p-8">
+                        <p class="text-2xl text-red-700 font-bold">Server Error</p>
+                        <p class="text-red-500 mt-2">We couldn't load the service plans right now. Please check the network connection or try reloading the page.</p>
+                    </div>
+                `;
+            }
+
+            // Initial call to fetch data when the page loads
+            fetchAndRenderTariffs();
+        });
+    </script>
 </body>
 </html>
