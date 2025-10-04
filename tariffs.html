@@ -1,169 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GloeX - Our Tariffs & Pricing</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Padding for fixed header and footer */
-            padding-top: 68px; /* Height of the header */
-            padding-bottom: 96px; /* Height of the footer */
-        }
-        /* Style for the fixed header */
-        .fixed-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
-        }
-        /* Style for the fixed footer */
-        .fixed-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
-        }
-        /* Custom bank/table style for tariffs */
-        .tariff-card {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease-in-out;
-        }
-        .tariff-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            transform: translateY(-5px);
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GloeX - Our Tariffs & Pricing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Light background for contrast */
+            /* Padding for fixed header and footer: Adjust based on fixed element heights */
+            padding-top: 68px; 
+            padding-bottom: 96px;
+        }
+        /* Style for the fixed header */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+        }
+        /* Style for the fixed footer */
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+        }
+        /* Custom bank/table style for tariffs */
+        .tariff-card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
+            border-top: 8px solid; /* Solid border for the dynamic color */
+        }
+        .tariff-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-5px);
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <header class="fixed-header bg-white shadow-md">
-        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <a href="/" class="text-3xl font-extrabold text-indigo-700 tracking-tight">GloeX</a>
-            <div class="space-x-4">
-                <a href="/#services" class="text-gray-600 hover:text-indigo-600 px-3 py-2 font-medium hidden sm:inline-block">Services</a>
-                <a href="/#portfolio" class="text-gray-600 hover:text-indigo-600 px-3 py-2 font-medium hidden sm:inline-block">Portfolio</a>
-                <a href="/#contact" class="text-gray-600 hover:text-indigo-600 px-3 py-2 font-medium hidden sm:inline-block">Contact</a>
-                <a href="apiedflow.html" class="bg-indigo-600 text-white rounded-lg px-5 py-2.5 font-semibold hover:bg-indigo-700 transition duration-150 shadow-md">Hire Us</a>
-            </div>
-        </nav>
-    </header>
+    <header class="fixed-header bg-white shadow-md"> 
+        <nav class="container mx-auto px-4 lg:px-6 py-4 flex justify-between items-center"> 
+            <a href="/" class="text-2xl font-bold text-indigo-700 tracking-tight">GloeX</a> 
+            <div class="space-x-4"> 
+                <a href="/#services" class="text-gray-600 hover:text-indigo-600 px-3 py-2 font-medium hidden sm:inline-block">Services</a> 
+                <a href="/#portfolio" class="text-gray-600 hover:text-indigo-600 px-3 py-2 font-medium hidden sm:inline-block">Portfolio</a> 
+                <a href="/#contact" class="text-gray-600 hover:text-indigo-600 px-3 py-2 font-medium hidden sm:inline-block">Contact</a> 
+                <a href="apiedflow.html" class="bg-indigo-600 text-white rounded-lg px-5 py-2.5 font-semibold hover:bg-indigo-700 transition duration-150 shadow-md">Hire Us</a> 
+            </div> 
+        </nav> 
+    </header>
 
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <section class="text-center mb-12">
-            <h1 class="text-5xl font-extrabold text-gray-900 leading-tight mb-4">Transparent Pricing for Excellence</h1>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                Explore our service packages and competitive rates. Click any service to learn more or initiate a request.
-            </p>
-        </section>
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <section class="text-center mb-12">
+            <h1 class="text-5xl font-extrabold text-gray-900 leading-tight mb-4">Transparent Pricing for Excellence</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Explore our service packages and competitive rates. Click any service to learn more or initiate a request.
+            </p>
+        </section>
 
-        <div id="tariff-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div id="loading-spinner" class="md:col-span-2 lg:col-span-3 text-center py-20">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600 mx-auto"></div>
-                <p class="mt-4 text-gray-500 text-lg font-medium">Fetching our latest service rates...</p>
-            </div>
-        </div>
-    </main>
+        <div id="tariff-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div id="loading-spinner" class="md:col-span-2 lg:col-span-3 text-center py-20">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600 mx-auto"></div>
+                <p class="mt-4 text-gray-500 text-lg font-medium">Fetching our latest service rates...</p>
+            </div>
+        </div>
+    </main>
 
-    <footer class="fixed-footer bg-white border-t border-gray-200">
-        <div class="container mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600">
-            <p class="mb-2 sm:mb-0">&copy; 2024 GloeX. All rights reserved.</p>
-            <p>For urgent matters, call us at <a href="tel:+250788888888" class="text-indigo-600 hover:text-indigo-800 font-semibold transition duration-150">+250 788 888 888</a></p>
-        </div>
-    </footer>
+    <footer class="fixed-footer bg-white border-t border-gray-200">
+        <div class="container mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600">
+            <p class="mb-2 sm:mb-0">&copy; 2024 GloeX. All rights reserved.</p>
+            <p>For urgent matters, call us at <a href="tel:+250788888888" class="text-indigo-600 hover:text-indigo-800 font-semibold transition duration-150">+250 788 888 888</a></p>
+        </div>
+    </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- CONFIGURATION ---
-            // CORRECTED: Added '/tariffs/' to the API endpoint
-            const API_ENDPOINT = 'https://gloex.pythonanywhere.com/api/tariffs/';
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            // Correct API endpoint matching the Django urls.py
+            const API_ENDPOINT = 'https://gloex.pythonanywhere.com/api/tariffs/';
 
-            const tariffContainer = document.getElementById('tariff-container');
+            const tariffContainer = document.getElementById('tariff-container');
 
-            // --- API Fetching ---
-            async function fetchAndRenderTariffs() {
-                // Initial loading state setup (clears previous content)
-                tariffContainer.innerHTML = `
-                    <div id="loading-spinner" class="md:col-span-2 lg:col-span-3 text-center py-20">
-                        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600 mx-auto"></div>
-                        <p class="mt-4 text-gray-500 text-lg font-medium">Fetching our latest service rates...</p>
-                    </div>`;
+            // --- API Fetching ---
+            async function fetchAndRenderTariffs() {
+                // Clear previous content and show initial loading state
+                tariffContainer.innerHTML = `
+                    <div id="loading-spinner" class="md:col-span-2 lg:col-span-3 text-center py-20">
+                        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600 mx-auto"></div>
+                        <p class="mt-4 text-gray-500 text-lg font-medium">Fetching our latest service rates...</p>
+                    </div>`;
 
-                try {
-                    const response = await fetch(API_ENDPOINT);
-                    if (!response.ok) {
-                        throw new Error(\`HTTP error! status: \${response.status}\`);
-                    }
-                    const tariffs = await response.json();
-                    renderTariffs(tariffs);
-                } catch (error) {
-                    console.error("Failed to fetch tariffs:", error);
-                    renderError();
-                }
-            }
+                try {
+                    const response = await fetch(API_ENDPOINT);
+                    
+                    // The Django view returns an array of tariff objects directly
+                    const tariffs = await response.json(); 
+                    
+                    if (!response.ok) {
+                        // This handles HTTP errors like 404, 500, etc.
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    // The Django view returns a list directly, so no need for responseData.tariffs
+                    renderTariffs(tariffs); 
+                    
+                } catch (error) {
+                    console.error("Failed to fetch tariffs:", error);
+                    renderError();
+                }
+            }
 
-            function renderTariffs(tariffs) {
-                // Clear loading state
-                tariffContainer.innerHTML = '';
+            function renderTariffs(tariffs) {
+                // Clear loading state
+                tariffContainer.innerHTML = '';
 
-                if (tariffs.length === 0) {
-                    tariffContainer.innerHTML = '<p class="md:col-span-2 lg:col-span-3 text-center text-gray-500 py-20 text-lg">No services are currently available. Please check back later.</p>';
-                    return;
-                }
+                if (!Array.isArray(tariffs) || tariffs.length === 0) {
+                    tariffContainer.innerHTML = '<p class="md:col-span-2 lg:col-span-3 text-center text-gray-500 py-20 text-lg">No services are currently available. Please check back later.</p>';
+                    return;
+                }
 
-                tariffs.forEach(tariff => {
-                    const defaultColor = '#6366F1'; // Default Indigo 600
-                    const cardColor = tariff.color || defaultColor;
+                tariffs.forEach(tariff => {
+                    const defaultColor = '#6366F1'; // Default Indigo 600
+                    const cardColor = tariff.color || defaultColor;
 
-                    const tariffCard = document.createElement('a');
-                    tariffCard.href = tariff.redirect_url;
-                    tariffCard.target = '_blank'; // Open link in a new tab
-                    
-                    // The "bank-like" card styling
-                    tariffCard.className = 'tariff-card block p-6 bg-white rounded-xl shadow-lg border-t-8';
-                    tariffCard.style.borderColor = cardColor;
-                    
-                    // Determine text color for the button
-                    const buttonStyle = `background-color: ${cardColor};`;
-                    
-                    tariffCard.innerHTML = `
-                        <div class="flex flex-col h-full">
-                            <h3 class="text-2xl font-extrabold text-gray-900 mb-2">${tariff.title}</h3>
-                            
-                            <p class="text-4xl font-extrabold mb-4" style="color: ${cardColor}">${tariff.price}</p>
-                            
-                            <p class="text-gray-600 mb-6 flex-grow">${tariff.description}</p>
-                            
-                            <div class="mt-auto">
-                                <button class="w-full text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-150" style="${buttonStyle}">
-                                    Get Started
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    tariffContainer.appendChild(tariffCard);
-                });
-            }
+                    const tariffCard = document.createElement('a');
+                    tariffCard.href = tariff.redirect_url;
+                    tariffCard.target = '_blank'; // Open link in a new tab
+                    
+                    // The "bank-like" card styling
+                    tariffCard.className = 'tariff-card block p-6 bg-white rounded-xl shadow-lg border-t-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1';
+                    tariffCard.style.borderColor = cardColor; // Apply color to the top border
+                    
+                    const buttonStyle = `background-color: ${cardColor};`;
+                    
+                    tariffCard.innerHTML = `
+                        <div class="flex flex-col h-full">
+                            <h3 class="text-2xl font-extrabold text-gray-900 mb-2">${tariff.title}</h3>
+                            
+                            <p class="text-4xl font-extrabold mb-4" style="color: ${cardColor}">${tariff.price}</p>
+                            
+                            <p class="text-gray-600 mb-6 flex-grow">${tariff.description}</p>
+                            
+                            <div class="mt-auto">
+                                <button class="w-full text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-150" style="${buttonStyle}">
+                                    Get Started
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    tariffContainer.appendChild(tariffCard);
+                });
+            }
 
-            function renderError() {
-                tariffContainer.innerHTML = `
-                    <div class="md:col-span-2 lg:col-span-3 text-center py-20">
-                        <p class="text-3xl font-extrabold text-red-600">Oops! Service Error.</p>
-                        <p class="text-gray-600 mt-3 text-lg">We couldn't load our services right now. Please check your network or try again later.</p>
-                    </div>
-                `;
-            }
+            function renderError() {
+                tariffContainer.innerHTML = `
+                    <div class="md:col-span-2 lg:col-span-3 text-center py-20">
+                        <p class="text-3xl font-extrabold text-red-600">Oops! Service Error.</p>
+                        <p class="text-gray-600 mt-3 text-lg">We couldn't load our services right now. Please check your network or try again later.</p>
+                    </div>
+                `;
+            }
 
-            // Execute the fetch and render function on page load
-            fetchAndRenderTariffs();
-        });
-    </script>
+            // Execute the fetch and render function on page load
+            fetchAndRenderTariffs();
+        });
+    </script>
 </body>
 </html>
