@@ -63,48 +63,38 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
     </style>
-<style>
-    /* Add a custom breakpoint for very small phones if you haven't already */
-    /* If you are using Tailwind CDN, you can't define custom breakpoints easily. */
-    /* We'll stick to Tailwind defaults (sm: 640px) and use 'hidden' for mobile. */
-    /* ... (rest of your styles) ... */
-</style>
+</head>
+<body class="min-h-screen flex flex-col">
 
-<header class="bg-emerald-800 shadow-xl py-3 sticky top-0 z-20">
-    <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-4 sm:px-6 lg:px-8">
-        
-        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 w-full md:w-auto"> 
-            <img src="1-1.png" alt="GLOEX.ORG Logo" class="w-10 h-10 hidden sm:block"> 
-            
-            <div class="flex items-center gap-2">
-                <h1 class="text-xl sm:text-3xl font-extrabold text-white whitespace-nowrap">
+    <header class="bg-emerald-800 shadow-xl py-3 sticky top-0 z-20">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <img src="1-1.png" alt="GLOEX.ORG Logo" class="w-10 h-10 hidden sm:block"> 
+                <h1 class="text-3xl font-extrabold text-white">
                     <a href="index.html" id="appTitle" class="hover:text-amber-300 transition">GLOEX.ORG</a>
                 </h1>
-                <p class="text-xs sm:text-sm text-amber-300 hidden sm:block">ELIJUL GROUPS LTD</p>
+                <p class="text-sm text-amber-300 hidden sm:block">ELIJUL GROUPS LTD</p>
+                <a href="index.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Home</a>
+                <a href="apiedflow.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Hire Us</a>
+                <a href="apiedflow.html#view-request-form" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Track Your Request</a>
+                <a href="tariffs.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Tariffs</a>
             </div>
             
-            <a href="index.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden md:inline-block">Home</a>
-            <a href="apiedflow.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden md:inline-block">Hire Us</a>
-            <a href="apiedflow.html#view-request-form" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden md:inline-block">Track Your Request</a>
-            <a href="tariffs.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden md:inline-block">Tariffs</a>
+            <div class="flex-grow max-w-lg w-full md:w-auto">
+                <form id="search-form" onsubmit="handleSearch(event)">
+                    <div class="relative">
+                        <input type="search" name="query" placeholder="Search projects by title, keyword, or user..."
+                               class="w-full p-2 pl-4 pr-10 border border-emerald-600 rounded-full bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-gray-800 transition">
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-emerald-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <nav id="nav-actions" class="mt-2 md:mt-0"></nav>
         </div>
-        
-        <div class="flex-grow max-w-lg w-full md:w-auto order-3 md:order-2">
-            <form id="search-form" onsubmit="handleSearch(event)">
-                <div class="relative">
-                    <input type="search" name="query" placeholder="Search projects by title, keyword, or user..."
-                           class="w-full p-2 pl-4 pr-10 border border-emerald-600 rounded-full bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-gray-800 transition">
-                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-emerald-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </button>
-                </div>
-            </form>
-        </div>
-        
-        <nav id="nav-actions" class="mt-2 md:mt-0 order-2 md:order-3 w-full flex justify-center md:w-auto md:block"></nav>
-    </div>
-</header>
-
+    </header>
 
     <section class="bg-emerald-50 py-16 border-b-4 border-emerald-300">
         <div class="container mx-auto px-4 text-center grid grid-cols-1 md:grid-cols-2 items-center gap-8">
