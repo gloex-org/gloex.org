@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request a Service - Gloex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        .step-indicator.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+        }
+        .step-indicator.completed {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header (assumed to be the same as your landing page) -->
+    <header class="bg-white shadow-sm">
+        <nav class="container mx-auto px-4 lg:px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-indigo-600">GloeX</a>
+            <div>
+                <!-- Add links to your landing page sections here -->
+                <a href="/#services" class="text-gray-600 hover:text-indigo-600 px-3 py-2">Services</a>
+                <a href="/#portfolio" class="text-gray-600 hover:text-indigo-600 px-3 py-2">Portfolio</a>
+                <a href="/#contact" class="text-gray-600 hover:text-indigo-600 px-3 py-2">Contact</a>
+                <a href="apiedflow.html" class="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700">Hire Us</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 lg:px-6 py-12">
+        <div id="request-form-container">
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+                <h1 class="text-3xl font-bold text-center mb-2">Let's Build Together</h1>
+                <p class="text-center text-gray-600 mb-8">Fill out the form below to get started on your project.</p>
+
+                <!-- Step Indicators -->
+                <div class="flex items-center justify-center space-x-4 mb-10">
+                    <div id="step-indicator-1" class="step-indicator active w-10 h-10 rounded-full flex items-center justify-center font-bold">1</div>
+                    <div class="flex-1 h-1 bg-gray-200"></div>
+                    <div id="step-indicator-2" class="step-indicator bg-gray-200 text-gray-500 w-10 h-10 rounded-full flex items-center justify-center font-bold">2</div>
+                    <div class="flex-1 h-1 bg-gray-200"></div>
+                    <div id="step-indicator-3" class="step-indicator bg-gray-200 text-gray-500 w-10 h-10 rounded-full flex items-center justify-center font-bold">3</div>
+                </div>
+
+                <form id="service-request-form">
+                    <!-- Step 1: Service & Location -->
+                    <div id="step-1" class="form-step active">
+                        <h2 class="text-2xl font-semibold mb-6">Service & Contact Details</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="service_type" class="block text-sm font-medium text-gray-700 mb-1">What service do you need?</label>
+                                <select id="service_type" name="service_type" required class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="build_idea">Build Your Idea</option>
+                                    <option value="build_website">Build a Website</option>
+                                    <option value="build_software">Build Software</option>
+                                    <option value="cybersecurity">Cybersecurity Services</option>
+                                    <option value="training">Training</option>
+                                    <option value="team_management">Team Management</option>
+                                    <option value="join_us">I want to Join GloeX</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="organization_type" class="block text-sm font-medium text-gray-700 mb-1">Are you a...</label>
+                                <select id="organization_type" name="organization_type" required class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="company">Company / Organization</option>
+                                    <option value="individual">Individual</option>
+                                </select>
+                            </div>
+                             <div class="md:col-span-2">
+                                <label for="organization_name" class="block text-sm font-medium text-gray-700 mb-1">Company / Your Full Name</label>
+                                <input type="text" id="organization_name" name="organization_name" required placeholder="e.g., GloeX Ltd or John Doe" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                                <input type="text" id="country" name="country" required placeholder="e.g., Rwanda" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input type="text" id="city" name="city" required placeholder="e.g., Kigali" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="preferred_language" class="block text-sm font-medium text-gray-700 mb-1">Preferred Communication Language</label>
+                                <input type="text" id="preferred_language" name="preferred_language" required placeholder="e.g., English, Kinyarwanda" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>
+                        <div class="mt-8 text-right">
+                            <button type="button" onclick="nextStep(2)" class="bg-indigo-600 text-white rounded-md px-6 py-2 font-semibold hover:bg-indigo-700 transition">Next: Project Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Job Details -->
+                    <div id="step-2" class="form-step">
+                        <h2 class="text-2xl font-semibold mb-6">Project Details</h2>
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label for="job_category" class="block text-sm font-medium text-gray-700 mb-1">Project Category (Optional)</label>
+                                <input type="text" id="job_category" name="job_category" placeholder="e.g., E-commerce Platform, Company Portfolio" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label for="job_description" class="block text-sm font-medium text-gray-700 mb-1">Describe what you need</label>
+                                <textarea id="job_description" name="job_description" rows="6" required placeholder="Please be as detailed as possible. What are the main goals? Who are the users?" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="job_attachment_url" class="block text-sm font-medium text-gray-700 mb-1">Link to Files (Optional)</label>
+                                <input type="url" id="job_attachment_url" name="job_attachment_url" placeholder="https://docs.google.com/..." class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <p class="text-xs text-gray-500 mt-1">Share a link to any relevant documents, mockups, or specifications (e.g., Google Drive, Dropbox).</p>
+                            </div>
+                             <div>
+                                <label for="due_date" class="block text-sm font-medium text-gray-700 mb-1">Desired Due Date (Optional)</label>
+                                <input type="date" id="due_date" name="due_date" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>
+                        <div class="mt-8 flex justify-between">
+                            <button type="button" onclick="prevStep(1)" class="bg-gray-200 text-gray-800 rounded-md px-6 py-2 font-semibold hover:bg-gray-300 transition">Back</button>
+                            <button type="button" onclick="nextStep(3)" class="bg-indigo-600 text-white rounded-md px-6 py-2 font-semibold hover:bg-indigo-700 transition">Next: Budget & Contact</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Budget & Submission -->
+                    <div id="step-3" class="form-step">
+                         <h2 class="text-2xl font-semibold mb-6">Budget & Contact</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="primary_email" class="block text-sm font-medium text-gray-700 mb-1">Primary Email</label>
+                                <input type="email" id="primary_email" name="primary_email" required placeholder="you@example.com" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label for="primary_phone" class="block text-sm font-medium text-gray-700 mb-1">Primary Phone</label>
+                                <input type="tel" id="primary_phone" name="primary_phone" required placeholder="+250 78..." class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                             <div class="md:col-span-2">
+                                <label for="secondary_phone" class="block text-sm font-medium text-gray-700 mb-1">Secondary Phone (Optional)</label>
+                                <input type="tel" id="secondary_phone" name="secondary_phone" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="budget_range" class="block text-sm font-medium text-gray-700 mb-1">What is your estimated budget?</label>
+                                <select id="budget_range" name="budget_range" required class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="below_20k">Below 20,000 RWF</option>
+                                    <option value="20k_50k">20,000 - 50,000 RWF</option>
+                                    <option value="50k_100k">50,000 - 100,000 RWF</option>
+                                    <option value="100k_200k">100,000 - 200,000 RWF</option>
+                                    <option value="200k_500k">200,000 - 500,000 RWF</option>
+                                    <option value="above_500k">Above 500,000 RWF</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="terms_accepted" name="terms_accepted" type="checkbox" required class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="terms_accepted" class="font-medium text-gray-700">I agree to the <a href="#" class="text-indigo-600 hover:underline">Terms and Conditions</a></label>
+                                        <p class="text-gray-500">By submitting, you agree to let us contact you regarding your request.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex justify-between items-center">
+                            <button type="button" onclick="prevStep(2)" class="bg-gray-200 text-gray-800 rounded-md px-6 py-2 font-semibold hover:bg-gray-300 transition">Back</button>
+                            <button type="submit" id="submit-btn" class="bg-green-600 text-white rounded-md px-8 py-3 font-bold hover:bg-green-700 transition flex items-center">
+                                <span id="submit-text">Submit Request</span>
+                                <svg id="submit-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div id="form-message" class="mt-6"></div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-container" class="hidden max-w-2xl mx-auto text-center">
+             <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Request Submitted!</h2>
+                <p class="text-gray-600 mb-6">Thank you for reaching out. We have received your request and will get back to you shortly. Please save your unique request code below to track its progress.</p>
+                <div class="bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-lg p-4 mb-8">
+                    <p class="text-sm text-indigo-700 font-medium">Your Unique Request Code:</p>
+                    <p id="request-code" class="text-3xl font-bold text-indigo-900 tracking-widest"></p>
+                </div>
+                <button onclick="downloadOffer()" class="bg-indigo-600 text-white rounded-md px-6 py-2 font-semibold hover:bg-indigo-700 transition mb-4">Download My Offer</button>
+                <button onclick="window.location.reload()" class="bg-gray-200 text-gray-800 rounded-md px-6 py-2 font-semibold hover:bg-gray-300 transition">Submit Another Request</button>
+             </div>
+        </div>
+
+        <!-- View Past Request Section -->
+        <div class="max-w-4xl mx-auto mt-16">
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold text-center mb-4">Track Your Request</h2>
+                <p class="text-center text-gray-600 mb-6">Enter your 8-character request code to view its status and our feedback.</p>
+                <form id="view-request-form" class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <input type="text" id="view-code-input" placeholder="Enter your code" maxlength="8" class="w-full sm:w-auto flex-grow px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 uppercase">
+                    <button type="submit" class="bg-indigo-600 text-white rounded-md px-6 py-2 font-semibold hover:bg-indigo-700 transition w-full sm:w-auto">View Status</button>
+                </form>
+                <div id="view-request-result" class="mt-8"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer (assumed to be the same as your landing page) -->
+    <footer class="bg-white mt-16 border-t">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-600">
+            <p>&copy; 2024 GloeX. All rights reserved.</p>
+            <p class="mt-2">For urgent matters, call us at <a href="tel:+250788888888" class="text-indigo-600 hover:underline">+250 788 888 888</a></p>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE_URL = 'https://gloex.pythonanywhere.com/api'; // CHANGE THIS to your actual API URL
+        let currentStep = 1;
+        let formData = {};
+
+        function showStep(step) {
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            document.querySelector(`#step-${step}`).classList.add('active');
+
+            document.querySelectorAll('.step-indicator').forEach(el => el.classList.remove('active', 'completed'));
+            for (let i = 1; i <= 3; i++) {
+                const indicator = document.querySelector(`#step-indicator-${i}`);
+                if (i < step) {
+                    indicator.classList.add('completed');
+                } else if (i === step) {
+                    indicator.classList.add('active');
+                }
+            }
+        }
+
+        function nextStep(step) {
+            // Basic validation for current step before proceeding
+            const currentStepForm = document.querySelector(`#step-${currentStep}`);
+            let isValid = true;
+            currentStepForm.querySelectorAll('[required]').forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.classList.add('border-red-500');
+                } else {
+                     input.classList.remove('border-red-500');
+                }
+            });
+
+            if(isValid) {
+                 currentStep = step;
+                showStep(currentStep);
+            } else {
+                 alert('Please fill out all required fields in this section.');
+            }
+           
+        }
+
+        function prevStep(step) {
+            currentStep = step;
+            showStep(currentStep);
+        }
+        
+        // Form Submission
+        const form = document.getElementById('service-request-form');
+        const messageDiv = document.getElementById('form-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const submitSpinner = document.getElementById('submit-spinner');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            messageDiv.innerHTML = '';
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitSpinner.classList.remove('hidden');
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data.terms_accepted = data.terms_accepted === 'on';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/service-request/create/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('request-form-container').classList.add('hidden');
+                    document.getElementById('success-container').classList.remove('hidden');
+                    document.getElementById('request-code').textContent = result.request_code;
+                    // Store form data for download
+                    localStorage.setItem('lastOffer', JSON.stringify({ ...data, ...result }));
+                } else {
+                    throw new Error(result.error || 'Something went wrong.');
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"><strong class="font-bold">Error:</strong><span class="block sm:inline"> ${error.message}</span></div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+            }
+        });
+        
+        // View Past Request
+        const viewRequestForm = document.getElementById('view-request-form');
+        const viewRequestResult = document.getElementById('view-request-result');
+        const viewCodeInput = document.getElementById('view-code-input');
+
+        viewRequestForm.addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const code = viewCodeInput.value.trim();
+            if(!code) {
+                viewRequestResult.innerHTML = `<p class="text-red-500">Please enter a request code.</p>`;
+                return;
+            }
+            viewRequestResult.innerHTML = `<p class="text-gray-500">Searching...</p>`;
+
+             try {
+                const response = await fetch(`${API_BASE_URL}/service-request/view/?code=${code}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    renderRequestDetails(result);
+                } else {
+                    throw new Error(result.error || 'Could not find request.');
+                }
+            } catch (error) {
+                viewRequestResult.innerHTML = `<p class="text-red-500"><strong>Error:</strong> ${error.message}</p>`;
+            }
+        });
+
+        function renderRequestDetails(data) {
+            let reviewsHtml = `<h4 class="text-lg font-semibold mt-6 mb-2 border-t pt-4">Admin Reviews</h4>`;
+            if (data.reviews && data.reviews.length > 0) {
+                 reviewsHtml += `<div class="space-y-4">`;
+                 data.reviews.forEach(review => {
+                     reviewsHtml += `
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <p class="font-semibold text-gray-800">${review.comment}</p>
+                            <p class="text-sm text-gray-500 mt-1">By ${review.admin_username} on ${new Date(review.created_at).toLocaleString()}</p>
+                        </div>
+                     `;
+                 });
+                 reviewsHtml += `</div>`;
+            } else {
+                reviewsHtml += `<p class="text-gray-500">No reviews from the admin yet. Please check back later.</p>`;
+            }
+
+            viewRequestResult.innerHTML = `
+                <div class="border rounded-lg p-6 bg-white">
+                    <h3 class="text-xl font-bold mb-4">Status for Request: <span class="text-indigo-600 font-mono">${data.request_code}</span></h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div><strong>Service:</strong> ${data.service_type}</div>
+                        <div><strong>Submitted On:</strong> ${new Date(data.created_at).toLocaleDateString()}</div>
+                        <div><strong>Client:</strong> ${data.organization_name}</div>
+                        <div><strong>Budget:</strong> ${data.budget_range}</div>
+                        <div class="md:col-span-2"><strong>Description:</strong> <p class="text-gray-600 whitespace-pre-wrap">${data.job_description}</p></div>
+                    </div>
+                    ${reviewsHtml}
+                </div>
+            `;
+        }
+        
+        // Download offer function
+        function downloadOffer() {
+            const offerData = JSON.parse(localStorage.getItem('lastOffer'));
+            if (!offerData) {
+                alert("No recent offer data found to download.");
+                return;
+            }
+
+            const content = `
+GloeX Service Request Summary
+===============================
+Request Code: ${offerData.request_code}
+Date Submitted: ${new Date().toLocaleString()}
+
+CLIENT DETAILS
+--------------
+Name/Company: ${offerData.organization_name} (${offerData.organization_type})
+Location: ${offerData.city}, ${offerData.country}
+Contact: ${offerData.primary_email} | ${offerData.primary_phone}
+Language: ${offerData.preferred_language}
+
+SERVICE REQUESTED
+-----------------
+Service Type: ${offerData.service_type}
+Category: ${offerData.job_category || 'N/A'}
+Due Date: ${offerData.due_date || 'N/A'}
+Budget: ${offerData.budget_range}
+
+DESCRIPTION
+-----------
+${offerData.job_description}
+
+ATTACHMENTS
+-----------
+${offerData.job_attachment_url || 'No link provided'}
+
+-------------------------------
+Thank you for your interest in GloeX. We will review your request and get back to you soon.
+            `;
+
+            const blob = new Blob([content.trim()], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `GloeX_Offer_${offerData.request_code}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        showStep(currentStep);
+
+    </script>
+</body>
+</html>

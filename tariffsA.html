@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Tariffs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple transition for modal */
+        #tariff-modal {
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- This is a placeholder for your website content -->
+    <div class="p-8">
+        <h1 class="text-4xl font-bold text-gray-800">Your Website Content</h1>
+        <p class="mt-4 text-gray-600">This is where the main content of your page would go. The floating tariff button will appear over this.</p>
+    </div>
+    <!-- End of placeholder content -->
+
+    <!-- Floating Button -->
+    <button id="open-tariff-btn" class="fixed bottom-6 right-6 bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform hover:scale-105 transition-transform duration-200">
+        View Our Tariffs
+    </button>
+
+    <!-- Modal Structure -->
+    <div id="tariff-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <h2 class="text-2xl font-bold text-gray-800">Our Services & Pricing</h2>
+                <button id="close-tariff-btn" class="text-gray-400 hover:text-gray-700 text-3xl">&times;</button>
+            </div>
+            <!-- Modal Body: Tariffs will be injected here -->
+            <div id="tariff-container" class="p-8 space-y-6">
+                <!-- Loading State -->
+                <div id="loading-spinner" class="text-center py-10">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                    <p class="mt-4 text-gray-500">Loading tariffs...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            // IMPORTANT: If the tariffs are not loading, you may need to change this URL
+            // to match your Django project's URL structure.
+            // For example, it could be '/apied/tariffs/' if your app is not under '/api/'.
+            const API_ENDPOINT = 'https://gloex.pythonanywhere.com/api/tariffs/';
+
+            // Get DOM elements
+            const openBtn = document.getElementById('open-tariff-btn');
+            const closeBtn = document.getElementById('close-tariff-btn');
+            const modal = document.getElementById('tariff-modal');
+            const tariffContainer = document.getElementById('tariff-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            // --- Event Listeners ---
+            openBtn.addEventListener('click', showModal);
+            closeBtn.addEventListener('click', hideModal);
+            
+            // Close modal if user clicks on the background overlay
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    hideModal();
+                }
+            });
+
+            // --- Functions ---
+            function showModal() {
+                modal.classList.remove('invisible', 'opacity-0');
+                modal.querySelector('.modal-content').classList.remove('scale-95');
+                // Fetch tariffs every time the modal is opened to ensure data is fresh
+                fetchAndRenderTariffs();
+            }
+
+            function hideModal() {
+                modal.classList.add('opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('invisible');
+                }, 300); // Match transition duration
+            }
+            
+            // --- API Fetching ---
+            async function fetchAndRenderTariffs() {
+                // Show loading spinner
+                tariffContainer.innerHTML = `
+                    <div id="loading-spinner" class="text-center py-10">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                        <p class="mt-4 text-gray-500">Loading tariffs...</p>
+                    </div>`;
+
+                try {
+                    const response = await fetch(API_ENDPOINT);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const tariffs = await response.json();
+                    renderTariffs(tariffs);
+                } catch (error) {
+                    console.error("Failed to fetch tariffs:", error);
+                    renderError();
+                }
+            }
+
+            function renderTariffs(tariffs) {
+                // Clear loading state
+                tariffContainer.innerHTML = '';
+
+                if (tariffs.length === 0) {
+                    tariffContainer.innerHTML = '<p class="text-center text-gray-500 py-10">No services are currently available. Please check back later.</p>';
+                    return;
+                }
+
+                tariffs.forEach(tariff => {
+                    const tariffCard = document.createElement('a');
+                    tariffCard.href = tariff.redirect_url;
+                    tariffCard.target = '_blank'; // Open link in a new tab
+                    tariffCard.className = 'block p-6 bg-white rounded-xl border-l-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2';
+                    tariffCard.style.borderColor = tariff.color || '#6366F1';
+                    
+                    tariffCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">${tariff.title}</h3>
+                                <p class="mt-2 text-gray-600">${tariff.description}</p>
+                            </div>
+                            <div class="ml-4 text-right flex-shrink-0">
+                                <p class="text-2xl font-extrabold" style="color: ${tariff.color || '#6366F1'}">${tariff.price}</p>
+                            </div>
+                        </div>
+                    `;
+                    tariffContainer.appendChild(tariffCard);
+                });
+            }
+            
+            function renderError() {
+                tariffContainer.innerHTML = `
+                    <div class="text-center py-10">
+                        <p class="text-red-600 font-semibold">Oops! Something went wrong.</p>
+                        <p class="text-gray-500 mt-2">We couldn't load our services right now. Please try again later.</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
+

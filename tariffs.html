@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GloeX - Our Tariffs & Pricing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Light background for contrast */
+            /* Adjusted padding-top and padding-bottom to accommodate the new fixed header/footer heights */
+            padding-top: 64px; /* Slightly adjusted for the new header */
+            padding-bottom: 120px; /* Increased for the taller footer */
+        }
+        /* Custom bank/table style for tariffs */
+        .tariff-card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
+            border-top: 8px solid; /* Solid border for the dynamic color */
+        }
+        .tariff-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+    <header class="fixed top-0 left-0 right-0 bg-emerald-900 text-white py-3 z-50">
+        <nav class="container mx-auto px-4 lg:px-6 flex justify-between items-center">
+            
+            <a href="/" class="text-2xl font-bold text-white">GloeX.org</a>
+            
+            <div class="space-x-2 sm:space-x-4 flex items-center">
+                <a href="index.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Home</a>
+                <a href="/#services" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Services</a>
+                <a href="/#portfolio" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Portfolio</a>
+                <a href="/#contact" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Contact</a>
+                <a href="apiedflow.html" class="bg-white text-[#008000] rounded-md px-4 py-2 font-semibold hover:bg-gray-200 transition duration-150 shadow-md">Hire Us</a>
+            </div>
+        </nav>
+    </header>
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <section class="text-center mb-16">
+            <h1 class="text-5xl font-extrabold text-gray-900 leading-tight mb-4">
+                Transparent Pricing for <span class="text-emerald-700">Digital Excellence</span> 
+            </h1>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto">
+                Discover the perfect package for your project. Our tariffs are designed to be clear, flexible, and value-driven, empowering you to scale from startup to enterprise.
+            </p>
+            <div class="mt-8 flex justify-center space-x-4">
+                <a href="#tariff-container" class="bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-xl hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
+                    View All Plans
+                </a>
+                <a href="apiedflow.html" class="bg-white text-emerald-700 border-2 border-emerald-700 font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-emerald-50 transition duration-300 transform hover:scale-105">
+                    Request a Custom Quote
+                </a>
+            </div>
+        </section>
+        
+        <section class="mb-12">
+             <h2 class="text-4xl font-bold text-gray-900 text-center mb-10">Our Standard Service Packages</h2>
+             <div id="tariff-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div id="loading-spinner" class="md:col-span-2 lg:col-span-3 text-center py-20">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-700 mx-auto"></div>
+                    <p class="mt-4 text-gray-500 text-lg font-medium">Fetching our latest service rates...</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="bg-white p-8 rounded-xl shadow-lg mt-16 border-l-4 border-indigo-600">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose GloeX Tariffs? </h2>
+            <ul class="list-disc list-inside text-lg text-gray-700 space-y-3 pl-4">
+                <li><strong class="text-emerald-700">No Hidden Fees:</strong> What you see is exactly what you pay.</li>
+                <li><strong class="text-emerald-700">Scalable Solutions:</strong> Easily upgrade or downgrade as your business needs evolve.</li>
+                <li><strong class="text-emerald-700">Dedicated Support:</strong> All plans include access to our expert technical team.</li>
+                <li><strong class="text-emerald-700">Customization Available:</strong> Need something unique? Contact us for a tailor-made plan.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-emerald-900 text-white py-4 px-6 z-50">
+        <div class="container mx-auto flex flex-col md:flex-row flex-wrap justify-center md:justify-between items-center text-center text-sm">
+
+            <div class="mb-2 md:mb-0 mr-4 text-center md:text-left space-y-1">
+                <p>
+                    For urgent matters, call: <a href="tel:+250788660513" class="text-white font-semibold hover:underline">(+250)788660513</a>
+                </p>
+                <p>Website: <a href="https://www.gloex.org" class="text-amber-300 hover:underline">WWW.GLOEX.ORG</a></p>
+            </div>
+            
+            <div class="mb-2 md:mb-0 mr-4 text-center md:text-left space-y-1">
+                <p>Email (Web/Software): <a href="mailto:infogloex@proton.me" class="text-amber-300 hover:underline">infogloex@proton.me</a></p>
+                <p>Email (Partnership): <a href="mailto:info@gloex.org" class="text-amber-300 hover:underline">info@gloex.org</a></p>
+            </div>
+
+            <p class="text-xs text-gray-200 mt-2 md:mt-0">
+                GLOEX.ORG | &copy; 2025 ELIJUL GROUPD LTD. All rights reserved.
+            </p>
+
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            const API_ENDPOINT = 'https://gloex.pythonanywhere.com/api/tariffs/';
+
+            const tariffContainer = document.getElementById('tariff-container');
+
+            // --- API Fetching ---
+            async function fetchAndRenderTariffs() {
+                // Clear previous content and show initial loading state
+                tariffContainer.innerHTML = `
+                    <div id="loading-spinner" class="md:col-span-2 lg:col-span-3 text-center py-20">
+                        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-700 mx-auto"></div>
+                        <p class="mt-4 text-gray-500 text-lg font-medium">Fetching our latest service rates...</p>
+                    </div>`;
+
+                try {
+                    const response = await fetch(API_ENDPOINT);
+                    const tariffs = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    renderTariffs(tariffs);
+                    
+                } catch (error) {
+                    console.error("Failed to fetch tariffs:", error);
+                    renderError();
+                }
+            }
+
+            function renderTariffs(tariffs) {
+                // Clear loading state
+                tariffContainer.innerHTML = '';
+
+                if (!Array.isArray(tariffs) || tariffs.length === 0) {
+                    tariffContainer.innerHTML = '<p class="md:col-span-2 lg:col-span-3 text-center text-gray-500 py-20 text-lg">No services are currently available. Please check back later.</p>';
+                    return;
+                }
+
+                tariffs.forEach(tariff => {
+                    // Changed default color to match new theme (Emerald-700 or Indigo-600)
+                    const defaultColor = '#047857'; // Tailwind Emerald 700
+                    const cardColor = tariff.color || defaultColor;
+
+                    const tariffCard = document.createElement('a');
+                    tariffCard.href = tariff.redirect_url;
+                    tariffCard.target = '_blank'; // Open link in a new tab
+                    
+                    // The "bank-like" card styling
+                    tariffCard.className = 'tariff-card block p-6 bg-white rounded-xl shadow-lg border-t-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1';
+                    tariffCard.style.borderColor = cardColor; // Apply color to the top border
+                    
+                    const buttonStyle = `background-color: ${cardColor};`;
+                    
+                    tariffCard.innerHTML = `
+                        <div class="flex flex-col h-full">
+                            <h3 class="text-2xl font-extrabold text-gray-900 mb-2">${tariff.title}</h3>
+                            
+                            <p class="text-4xl font-extrabold mb-4" style="color: ${cardColor}">${tariff.price}</p>
+                            
+                            <p class="text-gray-600 mb-6 flex-grow">${tariff.description}</p>
+                            
+                            <div class="mt-auto">
+                                <button class="w-full text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-150" style="${buttonStyle}">
+                                    Get Started
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    tariffContainer.appendChild(tariffCard);
+                });
+            }
+
+            function renderError() {
+                tariffContainer.innerHTML = `
+                    <div class="md:col-span-2 lg:col-span-3 text-center py-20">
+                        <p class="text-3xl font-extrabold text-red-600">Oops! Service Error. 🛑</p>
+                        <p class="text-gray-600 mt-3 text-lg">We couldn't load our services right now. Please check your network or try again later.</p>
+                    </div>
+                `;
+            }
+
+            // Execute the fetch and render function on page load
+            fetchAndRenderTariffs();
+        });
+    </script>
+</body>
+</html>
