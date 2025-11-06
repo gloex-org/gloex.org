@@ -1,0 +1,55 @@
+<div class="bg-gray-800 text-white text-xs py-1 px-4">
+    <div class="container mx-auto flex flex-wrap justify-center md:justify-end items-center gap-4">
+        <p class="font-semibold text-amber-300">If you want a beautiful website, contact us:</p>
+        <div class="flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06L6.222 9.24a5 5 0 005.556 5.556l1.242-1.242a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg> 250788660513</span>
+            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h14a2 2 0 002-2V8.118z"></path></svg> sales@elijul.com</span>
+            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg> Kigali-Rwanda</span>
+        </div>
+    </div>
+</div>
+
+<header class="bg-emerald-800 shadow-xl py-3 sticky top-0 z-20">
+    <div class="container mx-auto px-4 flex justify-between items-center gap-4">
+        <div class="flex items-center gap-3 flex-shrink-0">
+            <img src="1-1.png" alt="GLOEX.ORG Logo" class="w-10 h-10 hidden sm:block"> 
+            <h1 class="text-3xl font-extrabold text-white">
+                <a href="index.html" id="appTitle" class="hover:text-amber-300 transition">GLOEX.ORG</a>
+            </h1>
+            <p class="text-sm text-amber-300 hidden sm:block">ELIJUL GROUPS LTD</p>
+        </div>
+
+        <nav class="hidden lg:flex items-center space-x-4">
+            <a href="index.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium">Home</a>
+            <a href="apiedflow.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium">Hire Us</a>
+            <a href="apiedflow.html#view-request-form" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium">Track Your Request</a>
+            <a href="tariffs.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium">Tariffs</a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+            <form id="search-form" onsubmit="handleSearch(event)" class="max-w-xs w-full">
+                <div class="relative">
+                    <input type="search" name="query" placeholder="Search..."
+                           class="w-full p-2 pl-4 pr-10 border border-emerald-600 rounded-full bg-white text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-gray-800 transition">
+                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-emerald-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </button>
+                </div>
+            </form>
+
+            <nav id="nav-actions-desktop" class="hidden lg:flex"></nav>
+
+            <button id="mobile-menu-button" onclick="toggleMobileMenu()" class="lg:hidden p-2 text-white hover:text-amber-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+    </div>
+    
+    <div id="mobile-menu" class="lg:hidden hidden bg-emerald-700 py-2 mt-2 px-4">
+        <a href="index.html" class="block py-2 px-3 text-white hover:bg-emerald-600 transition rounded-md font-medium">Home</a>
+        <a href="apiedflow.html" class="block py-2 px-3 text-white hover:bg-emerald-600 transition rounded-md font-medium">Hire Us</a>
+        <a href="apiedflow.html#view-request-form" class="block py-2 px-3 text-white hover:bg-emerald-600 transition rounded-md font-medium">Track Your Request</a>
+        <a href="tariffs.html" class="block py-2 px-3 text-white hover:bg-emerald-600 transition rounded-md font-medium">Tariffs</a>
+        <nav id="nav-actions-mobile" class="mt-4 pt-4 border-t border-emerald-600"></nav>
+    </div>
+</header>

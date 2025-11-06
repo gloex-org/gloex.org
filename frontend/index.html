@@ -7,18 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Define custom Tailwind colors using the extended palette for a clean green */
+        /* CSS from original file goes here */
         :root {
-            --color-primary-green: #008000; /* Deep Green */
-            --color-accent-yellow: #ffcc00; /* Yellow */
+            --color-primary-green: #008000;
+            --color-accent-yellow: #ffcc00;
         }
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f8f7; /* Off-white/light-green background */
+            background-color: #f4f8f7;
         }
         
-        /* Utility for card descriptions */
         .line-clamp-3 {
             overflow: hidden;
             display: -webkit-box;
@@ -26,7 +25,6 @@
             -webkit-line-clamp: 3;
         }
 
-        /* Hero image animation */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
@@ -39,182 +37,80 @@
             transform: scale(1.05);
         }
         
-        /* Service List Hover Effect */
         .service-list li {
             position: relative;
         }
-        .service-list li:hover .modal-content {
-            display: block; 
-            width: 100%;
-            max-width: 400px;
-            top: 100%; 
-            left: 50%;
-            transform: translate(-50%, 10px);
+        /* Mobile/Small screen hover effect is disabled */
+        @media (min-width: 768px) {
+            .service-list li:hover .modal-content {
+                display: block; 
+                width: 100%;
+                max-width: 400px;
+                top: 100%; 
+                left: 50%;
+                transform: translate(-50%, 10px);
+            }
         }
+        
         .modal-content {
             display: none; 
             position: absolute; 
             z-index: 50;
             padding: 15px;
-            background-color: #ecfdf5; /* Lightest green */
-            border: 1px solid #a7f3d0; /* Light green border */
+            background-color: #ecfdf5;
+            border: 1px solid #a7f3d0;
             border-radius: 8px;
-            color: #065f46; /* Dark green text */
+            color: #065f46;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
-
-    <header class="bg-emerald-800 shadow-xl py-3 sticky top-0 z-20">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <img src="1-1.png" alt="GLOEX.ORG Logo" class="w-10 h-10 hidden sm:block"> 
-                <h1 class="text-3xl font-extrabold text-white">
-                    <a href="index.html" id="appTitle" class="hover:text-amber-300 transition">GLOEX.ORG</a>
-                </h1>
-                <p class="text-sm text-amber-300 hidden sm:block">ELIJUL GROUPS LTD</p>
-                <a href="index.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Home</a>
-                <a href="apiedflow.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Hire Us</a>
-                <a href="apiedflow.html#view-request-form" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Track Your Request</a>
-                <a href="tariffs.html" class="text-gray-200 hover:text-white hover:underline px-2 py-1 font-medium hidden sm:inline-block">Tariffs</a>
-            </div>
-            
-            <div class="flex-grow max-w-lg w-full md:w-auto">
-                <form id="search-form" onsubmit="handleSearch(event)">
-                    <div class="relative">
-                        <input type="search" name="query" placeholder="Search projects by title, keyword, or user..."
-                               class="w-full p-2 pl-4 pr-10 border border-emerald-600 rounded-full bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-gray-800 transition">
-                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-emerald-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
-            <nav id="nav-actions" class="mt-2 md:mt-0"></nav>
-        </div>
-    </header>
-
-    <section class="bg-emerald-50 py-16 border-b-4 border-emerald-300">
-        <div class="container mx-auto px-4 text-center grid grid-cols-1 md:grid-cols-2 items-center gap-8">
-            <div class="md:text-left">
-                <p class="text-sm font-semibold text-emerald-600 mb-2">DISCOVER THE FUTURE OF TECH</p>
-                <h2 class="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-4">GET YOUR WEBSITE OR SOFTWARE TODAY!</h2>
-                <p class="text-xl text-gray-600 mb-6">WE BUILD ROBUST, AFFORDABLE, AND SCALABLE DIGITAL SOLUTIONS.</p>
-                <a href="tariffs.html" class="text-2xl font-bold text-red-600 p-3 border-2 border-dashed border-red-500 inline-block bg-white rounded-lg shadow-lg">
-                    STARTING FROM 20,000 FRW (REBA IBICIRO HANO).
-                </a>
-                <a href="apiedflow.html" class="text-2xl font-bold text-red-600 p-3 border-2 border-dashed border-red-500 inline-block bg-white rounded-lg shadow-lg">
-                    KANDA HANO UDUHE AKAZI(wuzuze ibisabwa maze utwoherereza amakuru ajyanye nakazi udufitiye). 
-                </a>
-            
-            </div>
-            <div class="flex justify-center">
-                <img src="tank_picture.png" alt="GLOEX.ORG Services" class="tank-image-animated max-w-full h-auto max-h-80">
-            </div>
-        </div>
-    </section>
-
-    <main class="container mx-auto p-4 flex-grow" id="app-container">
-        </main>
-
-    <section id="services" class="bg-white py-16">
-        <div class="container mx-auto px-4">
-            <h3 class="text-4xl font-extrabold text-center text-emerald-800 mb-12 border-b-4 border-emerald-600 inline-block pb-3 mx-auto">
-                WHAT WE OFFER (STARTING FROM 20,000RWF)
-            </h3>
-
-            <div class="space-y-12">
-                <div class="category">
-                    <h4 class="text-2xl font-bold text-emerald-700 mb-6 border-l-4 border-amber-400 pl-4">
-                        Web, Software & Modern Development
-                    </h4>
-                    <ul class="service-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer">
-                            <strong>Website Maintenance & Management</strong>
-                            <span class="text-gray-600 block text-sm">Ensuring your website is secure, fast, and up-to-date. Includes Free Website Management.</span>
-                            <div class="modal-content">Details: We handle backups, security patching, content updates, and performance optimization so you can focus on your business.</div>
-                        </li>
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer">
-                            <strong>Custom Web/Mobile Application Development</strong>
-                            <span class="text-gray-600 block text-sm">Building unique, large-scale software solutions for complex business needs.</span>
-                            <div class="modal-content">Details: From bespoke internal tools to public-facing applications, we use modern frameworks (like React, Node.js) to deliver high performance.</div>
-                        </li>
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer">
-                            <strong>Advanced API & AI Integration</strong>
-                            <span class="text-gray-600 block text-sm">Connecting your systems and embedding intelligent features like chatbots and data analysis.</span>
-                            <div class="modal-content">Details: We integrate third-party APIs (e.g., payment gateways) and implement Machine Learning models to automate tasks and provide deep insights.</div>
-                        </li>
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer">
-                            <strong>Ecommerce Stores & Online Payments</strong>
-                            <span class="text-gray-600 block text-sm">Creating powerful online shops and integrating secure payment gateways for global transactions.</span>
-                            <div class="modal-content">Details: Full-stack e-commerce solutions, product management, secure payment processing, and inventory synchronization.</div>
-                        </li>
-                    </ul>
-                    <h4 class="text-xl font-bold text-emerald-700 mt-10 mb-4 border-l-4 border-amber-400 pl-4">Specific Website Types</h4>
-                    <ul class="service-list grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <li class="p-3 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-100 transition cursor-pointer"><strong>School & E-learning/LMS Platforms</strong></li>
-                        <li class="p-3 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-100 transition cursor-pointer"><strong>Hospital & Clinic Websites</strong></li>
-                        <li class="p-3 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-100 transition cursor-pointer"><strong>Hotel & Bar Reservation Systems</strong></li>
-                        <li class="p-3 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-100 transition cursor-pointer"><strong>Business & Corporate Sites</strong></li>
-                    </ul>
-                </div>
-
-                <div class="category">
-                    <h4 class="text-2xl font-bold text-emerald-700 mb-6 border-l-4 border-amber-400 pl-4">
-                          Business Automation & Financial Systems
-                    </h4>
-                    <ul class="service-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer"><strong>Billing, POS & Invoicing Systems</strong><div class="modal-content">Details: Customized Point-of-Sale (POS) systems, automated invoicing, and sales reporting tools for financial clarity.</div></li>
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer"><strong>HR, Payroll & CRM Tools</strong><div class="modal-content">Details: Tools for staff management, automated salary calculation, and Customer Relationship Management (CRM) to track leads and support history.</div></li>
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer"><strong>Stock & Inventory Management Systems</strong><div class="modal-content">Details: Automated low-stock alerts, multi-warehouse support, and detailed reporting to minimize loss and optimize purchasing.</div></li>
-                        <li class="p-4 bg-emerald-50 rounded-xl shadow-md hover:shadow-lg transition duration-300 border-l-4 border-emerald-600 cursor-pointer"><strong>Ticketing Systems & Customer Support</strong><div class="modal-content">Details: Efficient help desk software, ticket prioritization, and integrated knowledge bases for faster customer resolution.</div></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="bg-emerald-100 p-8 rounded-xl my-12 text-center shadow-inner">
-                <p class="text-xl font-semibold text-gray-700 mb-6">Explore Our Live Demos & Free Open-Source Projects</p>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <a href="https://bizimanasoftware.pythonanywhere.com" target="_blank" class="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold hover:bg-emerald-700 transition shadow-lg">LAUNCH TALENTHUB-DEMO</a>
-                    <a href="https://addproducts.pythonanywhere.com" target="_blank" class="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold hover:bg-emerald-700 transition shadow-lg">LAUNCH E-COMMERCE-DEMO</a>
-                    <a href="https://gitlab.com/bizimanasoftware/" target="_blank" class="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold hover:bg-emerald-700 transition shadow-lg">VIEW GITLAB PROJECTS</a>
-                    <a href="https://github.com/django-oscar/django-oscar" target="_blank" class="bg-emerald-600 text-white px-6 py-3 rounded-full font-bold hover:bg-emerald-700 transition shadow-lg">E-COMMERCE (Open Source)</a>
-                    <a href="https://github.com/" target="_blank" class="bg-gray-400 text-white px-6 py-3 rounded-full font-bold hover:bg-gray-500 transition shadow-md">DOWNLOAD FREE PROJECTS</a>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <footer class="bg-emerald-900 text-white p-4 mt-auto">
-        <div class="container mx-auto px-4 text-center">
-            <h3 class="text-3xl font-bold text-amber-300 mb-4">Ready to Start Your Project?</h3>
-            <p class="mb-6">Contact the ELIJUL GROUPS LTD team today for cutting-edge digital solutions.</p>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm font-medium">
-                <p>Website: <a href="https://www.gloex.org" class="text-amber-300 hover:underline">WWW.GLOEX.ORG</a></p>
-                <p>Email (Web/Software): <a href="mailto:infogloex@proton.me" class="text-amber-300 hover:underline">infogloex@proton.me</a></p>
-                <p>Email (Partnership): <a href="mailto:info@gloex.org" class="text-amber-300 hover:underline">info@gloex.org</a></p>
-                <p>Phone/WhatsApp: <span class="text-amber-300">+250788660513</span></p>
-                <a href="apiedflow.html" class="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700">Hire Us</a>
-                <a href="apiedflow.html#view-request-form" class="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700">Track Your Request</a>
-            </div>
-            <div class="mt-8 border-t border-emerald-700 pt-4">
-                <p class="text-sm font-light">Address: Kigali, Rwanda</p>
-                <p class="text-xs text-emerald-400 mt-1">GLOEX.ORG | &copy; 2025 ELIJUL GROUPS LTD</p>
-            </div>
-        </div>
-    </footer>
-
+    <div id="header-placeholder"></div>
+    <div id="content-placeholder" class="flex-grow"></div>
+    <div id="footer-placeholder"></div>
 
     <div id="message-box" class="fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg shadow-xl text-white font-semibold z-[100] transition-all duration-300 opacity-0 pointer-events-none"></div>
     <div id="project-detail-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
         <div id="modal-content" class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            </div>
+        </div>
     </div>
 
-
     <script>
+        // --- Template Loading Functions ---
+        async function loadTemplate(id, url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status} for ${url}`);
+                }
+                const html = await response.text();
+                document.getElementById(id).innerHTML = html;
+            } catch (error) {
+                console.error(`Failed to load ${url}:`, error);
+                document.getElementById(id).innerHTML = `<div class="p-4 bg-red-100 text-red-700 text-center">Error loading section: ${url}. Check file path.</div>`;
+            }
+        }
+
+        async function loadPage() {
+            // Load structure files
+            await loadTemplate('header-placeholder', 'header.html');
+            await loadTemplate('content-placeholder', 'main_content.html');
+            await loadTemplate('footer-placeholder', 'footer.html');
+            
+            // Now that all HTML is loaded, run the original initialization script
+            init(); 
+        }
+
+        // --- Mobile Menu Toggle Function ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            // Toggles the 'hidden' Tailwind class on/off
+            menu.classList.toggle('hidden'); 
+        }
+        // -----------------------------------------
+
+
         // --- Configuration ---
         const API_BASE_URL = 'https://gloex.pythonanywhere.com/api';
         
@@ -564,27 +460,52 @@
                 </div>`;
         }
         
+        // --- UPDATED RENDER HEADER NAV FUNCTION ---
         function renderHeaderNav() {
-            const nav = document.getElementById('nav-actions');
+            const navDesktop = document.getElementById('nav-actions-desktop');
+            const navMobile = document.getElementById('nav-actions-mobile');
+            
+            if (!navDesktop || !navMobile) return; // Exit if the placeholders haven't been loaded yet
+
             if (currentState.user) {
-                nav.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <button onclick="currentState.view='dashboard'; currentState.portfolioUser=null; renderApp()" class="text-sm font-semibold text-gray-900 px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-500 transition shadow-lg">
-                            <span class="hidden sm:inline">Post New</span> Project
+                // Content for logged-in user (Post Project, Portfolio, Logout)
+                const loggedInContent = `
+                    <div class="flex items-center space-x-3 lg:space-x-1 flex-col lg:flex-row gap-2 lg:gap-0">
+                        <button onclick="currentState.view='dashboard'; currentState.portfolioUser=null; renderApp()" class="text-sm font-semibold text-gray-900 px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-500 transition shadow-lg w-full lg:w-auto text-center">
+                            <span class="hidden lg:inline">Post New</span> Project
                         </button>
-                        <button onclick="currentState.view='portfolio'; currentState.portfolioUser='${currentState.user.username}'; renderApp()" class="text-sm font-semibold text-white hover:text-amber-300 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 transition">My Portfolio</button>
-                        <button onclick="handleLogout()" class="text-sm font-medium text-white hover:text-gray-200 px-3 py-2 rounded-lg border border-emerald-700 hover:bg-emerald-700 transition">Logout</button>
+                        <button onclick="currentState.view='portfolio'; currentState.portfolioUser='${currentState.user.username}'; renderApp()" class="text-sm font-semibold text-white hover:text-amber-300 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 transition w-full lg:w-auto text-center">My Portfolio</button>
+                        <button onclick="handleLogout()" class="text-sm font-medium text-white hover:text-gray-200 px-3 py-2 rounded-lg border border-emerald-700 hover:bg-emerald-700 transition w-full lg:w-auto text-center">Logout</button>
                     </div>`;
+
+                navDesktop.innerHTML = loggedInContent;
+                navMobile.innerHTML = loggedInContent; // Mobile content uses w-full for stacking
             } else {
-                // Link to the separate auth page
-                nav.innerHTML = `<a href="auth.html?redirect=login" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition shadow">Login / Register</a>`;
+                // Content for logged-out user
+                const linkClasses = "bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition shadow";
+
+                // Desktop: Single combined button
+                const desktopContent = `<a href="auth.html?redirect=login" class="${linkClasses}">Login / Register</a>`;
+
+                // Mobile: Separate, stacked buttons
+                const mobileContent = `
+                    <a href="auth.html?redirect=login" class="${linkClasses} block w-full text-center mb-2">Login</a>
+                    <a href="auth.html?redirect=register" class="${linkClasses} block w-full text-center">Register</a>`;
+
+                navDesktop.innerHTML = desktopContent;
+                navMobile.innerHTML = mobileContent;
             }
         }
+        // --- END UPDATED RENDER HEADER NAV FUNCTION ---
 
         async function renderApp() {
             const container = document.getElementById('app-container');
-            renderHeaderNav();
             
+            // Check if the placeholders exist before rendering the nav
+            if(document.getElementById('nav-actions-desktop')) {
+                renderHeaderNav();
+            }
+
             // Render loading state
             container.innerHTML = `<div class="text-center py-20 text-gray-500">
                 <svg class="animate-spin h-8 w-8 text-emerald-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -627,7 +548,8 @@
             renderApp();
         }
 
-        window.onload = init;
+        // IMPORTANT: Start the loading process
+        window.onload = loadPage; 
     </script>
 </body>
 </html>
